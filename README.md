@@ -32,8 +32,6 @@
 | --- | --- | --- | --- |
 | <img src="picture/today.png" width="200" alt="今日" /> | <img src="picture/week.png" width="200" alt="课表" /> | <img src="picture/agenda.png" width="200" alt="日程" /> | <img src="picture/mine.png" width="200" alt="我的" /> |
 
-> 截图待补充：把图片放进仓库根目录的 `picture/`，文件名与上表 `src` 一致即可。
-
 ---
 
 ## 功能
@@ -65,8 +63,12 @@
 
 ### 桌面小组件
 
+<img src="picture/widget.png" width="200" alt="桌面小组件" align="right" />
+
 - 今天 / 明天的课程概览与当日课程数，深浅色各有外观，点按直达应用。
 - **每日零点自动更新**：重排提醒并刷新小组件，不需要打开 App。
+
+<br clear="all" />
 
 ### 备份、迁移与同步
 

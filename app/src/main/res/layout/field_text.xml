@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  通用 M3 描边输入框模板。
+
+  之所以放在 XML 而不是在代码里 new TextInputLayout(ctx)：单参构造器拿到的 textInputStyle
+  在 M3 主题下是 FilledBox，即使事后 setBoxBackgroundMode(OUTLINE)，内层输入框也已经按默认
+  editTextStyle 造好了，标签位置与内边距都不对。从 XML 解析才能整套套用。
+-->
+<com.google.android.material.textfield.TextInputLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/field_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</com.google.android.material.textfield.TextInputLayout>

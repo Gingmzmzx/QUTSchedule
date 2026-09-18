@@ -9,23 +9,89 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView style="@style/FieldLabel" android:text="@string/profile_nickname" />
-        <EditText android:id="@+id/et_nickname" style="@style/FieldInput" android:inputType="text" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/profile_nickname">
 
-        <TextView style="@style/FieldLabel" android:text="@string/profile_signature" />
-        <EditText android:id="@+id/et_signature" style="@style/FieldInput" android:inputType="text" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_nickname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView style="@style/FieldLabel" android:text="@string/profile_school" />
-        <EditText android:id="@+id/et_school" style="@style/FieldInput" android:inputType="text" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/profile_signature">
 
-        <TextView style="@style/FieldLabel" android:text="@string/profile_college" />
-        <EditText android:id="@+id/et_college" style="@style/FieldInput" android:inputType="text" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_signature"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-        <TextView style="@style/FieldLabel" android:text="@string/profile_major" />
-        <EditText android:id="@+id/et_major" style="@style/FieldInput" android:inputType="text" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/profile_school">
 
-        <TextView style="@style/FieldLabel" android:text="@string/profile_grade" />
-        <EditText android:id="@+id/et_grade" style="@style/FieldInput" android:inputType="text" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_school"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/profile_college">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_college"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/profile_major">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_major"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:hint="@string/profile_grade">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_grade"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <Button
             android:id="@+id/btn_save"

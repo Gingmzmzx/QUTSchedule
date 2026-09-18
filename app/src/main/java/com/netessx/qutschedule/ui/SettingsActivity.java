@@ -2,12 +2,12 @@ package com.netessx.qutschedule.ui;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.Prefs;
@@ -23,8 +23,8 @@ public class SettingsActivity extends BaseActivity {
     private ScheduleStore store;
     private Semester semester;
     private Prefs prefs;
-    private EditText nameInput;
-    private EditText weeksInput;
+    private TextInputLayout nameInput;
+    private TextInputLayout weeksInput;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,7 +45,8 @@ public class SettingsActivity extends BaseActivity {
         column.addView(SettingsUi.buttonRow(this, termStartText(), v -> pickStartDate()));
 
         column.addView(SettingsUi.label(this, getString(R.string.settings_total_weeks)));
-        weeksInput = SettingsUi.numberRow(this, String.valueOf(semester.totalWeeks));
+        weeksInput = SettingsUi.numberRow(this, getString(R.string.settings_total_weeks),
+                String.valueOf(semester.totalWeeks));
         column.addView(weeksInput);
 
         SettingsUi.section(this, column, getString(R.string.mine_group_pref));
@@ -86,12 +87,11 @@ public class SettingsActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         if (nameInput != null) {
-            semester.name = nameInput.getText().toString().trim();
+            semester.name = SettingsUi.text(nameInput);
         }
         if (weeksInput != null) {
             try {
-                semester.totalWeeks = Math.max(1,
-                        Integer.parseInt(weeksInput.getText().toString().trim()));
+                semester.totalWeeks = Math.max(1, Integer.parseInt(SettingsUi.text(weeksInput)));
             } catch (NumberFormatException ignored) {
                 // 输入不是数字时保持原值
             }

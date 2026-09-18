@@ -7,7 +7,6 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.MainActivity;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
@@ -82,14 +82,14 @@ public class OnboardingActivity extends AppCompatActivity {
     private int step = STEP_WELCOME;
     private boolean imported;
 
-    private EditText nameInput;
-    private EditText weeksInput;
+    private TextInputLayout nameInput;
+    private TextInputLayout weeksInput;
     private MaterialButton startButton;
-    private EditText nicknameInput;
-    private EditText schoolInput;
-    private EditText collegeInput;
-    private EditText majorInput;
-    private EditText gradeInput;
+    private TextInputLayout nicknameInput;
+    private TextInputLayout schoolInput;
+    private TextInputLayout collegeInput;
+    private TextInputLayout majorInput;
+    private TextInputLayout gradeInput;
 
     private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -239,7 +239,8 @@ public class OnboardingActivity extends AppCompatActivity {
         column.addView(startButton);
 
         column.addView(SettingsUi.label(this, getString(R.string.onboarding_semester_weeks)));
-        weeksInput = SettingsUi.numberRow(this, String.valueOf(semester.totalWeeks));
+        weeksInput = SettingsUi.numberRow(this, getString(R.string.onboarding_semester_weeks),
+                String.valueOf(semester.totalWeeks));
         column.addView(weeksInput);
         return scrollHost(column);
     }
@@ -279,12 +280,11 @@ public class OnboardingActivity extends AppCompatActivity {
     /** @return 开学日期是否已设置；未设置时调用方应拦住不让进入下一步 */
     private boolean saveSemester() {
         if (nameInput != null) {
-            semester.name = nameInput.getText().toString().trim();
+            semester.name = SettingsUi.text(nameInput);
         }
         if (weeksInput != null) {
             try {
-                semester.totalWeeks = Math.max(1,
-                        Integer.parseInt(weeksInput.getText().toString().trim()));
+                semester.totalWeeks = Math.max(1, Integer.parseInt(SettingsUi.text(weeksInput)));
             } catch (NumberFormatException ignored) {
                 // 输入不是数字时保持原值
             }
@@ -403,19 +403,19 @@ public class OnboardingActivity extends AppCompatActivity {
     private void saveProfile() {
         Profile profile = data.profile;
         if (nicknameInput != null) {
-            profile.nickname = nicknameInput.getText().toString().trim();
+            profile.nickname = SettingsUi.text(nicknameInput);
         }
         if (schoolInput != null) {
-            profile.school = schoolInput.getText().toString().trim();
+            profile.school = SettingsUi.text(schoolInput);
         }
         if (collegeInput != null) {
-            profile.college = collegeInput.getText().toString().trim();
+            profile.college = SettingsUi.text(collegeInput);
         }
         if (majorInput != null) {
-            profile.major = majorInput.getText().toString().trim();
+            profile.major = SettingsUi.text(majorInput);
         }
         if (gradeInput != null) {
-            profile.grade = gradeInput.getText().toString().trim();
+            profile.grade = SettingsUi.text(gradeInput);
         }
         profile.normalize();
         ScheduleStore.get(this).save();

@@ -1,11 +1,11 @@
 package com.netessx.qutschedule.ui;
 
 import android.os.Bundle;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.live.LiveUpdateService;
@@ -19,7 +19,7 @@ import java.util.Arrays;
 public class ReminderSettingsActivity extends BaseActivity {
 
     private Prefs prefs;
-    private EditText leadInput;
+    private TextInputLayout leadInput;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,7 +34,8 @@ public class ReminderSettingsActivity extends BaseActivity {
         basic.addView(SettingsUi.switchRow(this, getString(R.string.settings_reminder),
                 prefs.reminderEnabled, (button, checked) -> prefs.reminderEnabled = checked));
         basic.addView(SettingsUi.label(this, getString(R.string.reminder_lead)));
-        leadInput = SettingsUi.numberRow(this, String.valueOf(prefs.defaultReminderMinutes));
+        leadInput = SettingsUi.numberRow(this, getString(R.string.reminder_lead),
+                String.valueOf(prefs.defaultReminderMinutes));
         basic.addView(leadInput);
 
         SettingsUi.section(this, column, getString(R.string.reminder_dnd));
@@ -70,7 +71,7 @@ public class ReminderSettingsActivity extends BaseActivity {
         super.onPause();
         try {
             prefs.defaultReminderMinutes = Math.max(0,
-                    Integer.parseInt(leadInput.getText().toString().trim()));
+                    Integer.parseInt(SettingsUi.text(leadInput)));
         } catch (NumberFormatException ignored) {
             // 输入不是数字时保持原值
         }

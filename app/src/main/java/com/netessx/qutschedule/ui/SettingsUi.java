@@ -3,12 +3,14 @@ package com.netessx.qutschedule.ui;
 import android.content.Context;
 import android.text.InputType;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -19,6 +21,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.R;
 
@@ -128,24 +131,75 @@ public final class SettingsUi {
         return view;
     }
 
-    public static EditText textRow(Context ctx, String hint, String value) {
-        EditText view = new EditText(ctx);
-        view.setHint(hint);
-        view.setText(value);
-        view.setTextSize(15);
-        view.setTextColor(ctx.getColor(R.color.colorOnSurface));
-        view.setHintTextColor(ctx.getColor(R.color.colorOnSurfaceVariant));
-        view.setInputType(InputType.TYPE_CLASS_TEXT);
-        return view;
+    /** M3 描边输入框。取值用 {@link #text(TextInputLayout)}。 */
+    public static TextInputLayout textRow(Context ctx, String hint, String value) {
+        return field(ctx, hint, value, InputType.TYPE_CLASS_TEXT);
     }
 
-    public static EditText numberRow(Context ctx, String value) {
-        EditText view = new EditText(ctx);
-        view.setText(value);
-        view.setTextSize(15);
-        view.setTextColor(ctx.getColor(R.color.colorOnSurface));
-        view.setInputType(InputType.TYPE_CLASS_NUMBER);
-        return view;
+    public static TextInputLayout numberRow(Context ctx, String hint, String value) {
+        return field(ctx, hint, value, InputType.TYPE_CLASS_NUMBER);
+    }
+
+    /** 对话框里的输入框，配 {@link #dialogWrap(Context, View)} 使用。 */
+    public static TextInputLayout dialogField(Context ctx, String hint, String value) {
+        return field(ctx, hint, value, InputType.TYPE_CLASS_TEXT);
+    }
+
+    /** 回填内容。{@code TextInputLayout} 自身没有 setText，得转发给里面的输入框。 */
+    public static void setText(TextInputLayout field, String value) {
+        if (field != null && field.getEditText() != null) {
+            field.getEditText().setText(value);
+        }
+    }
+
+    /** 原样读取，不做 trim。密码这类凭据不该被静默改掉首尾字符。 */
+    public static String raw(TextInputLayout field) {
+        if (field == null || field.getEditText() == null) {
+            return "";
+        }
+        CharSequence value = field.getEditText().getText();
+        return value == null ? "" : value.toString();
+    }
+
+    /** 读取输入框内容并去掉首尾空白。 */
+    public static String text(TextInputLayout field) {
+        if (field == null || field.getEditText() == null) {
+            return "";
+        }
+        CharSequence value = field.getEditText().getText();
+        return value == null ? "" : value.toString().trim();
+    }
+
+    private static TextInputLayout field(Context ctx, String hint, String value, int inputType) {
+        // 必须从 XML 解析：代码 new 出来的控件拿不到 M3 输入框的完整样式
+        TextInputLayout layout = (TextInputLayout) LayoutInflater.from(ctx)
+                .inflate(R.layout.field_text, null, false);
+        layout.setHint(hint);
+
+        TextInputEditText edit = layout.findViewById(R.id.field_input);
+        edit.setText(value);
+        edit.setInputType(inputType);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(ctx, 8);
+        layout.setLayoutParams(params);
+        return layout;
+    }
+
+    /**
+     * 包一层给对话框用。
+     *
+     * <p>对话框的 {@code setView} 会按自己的容器重新生成 LayoutParams，
+     * 直接给输入框设外边距会被丢掉，所以用内边距来留白。
+     */
+    public static View dialogWrap(Context ctx, View field) {
+        FrameLayout wrapper = new FrameLayout(ctx);
+        int pad = dp(ctx, 24);
+        wrapper.setPadding(pad, dp(ctx, 8), pad, 0);
+        wrapper.addView(field, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT));
+        return wrapper;
     }
 
     /**
@@ -154,26 +208,23 @@ public final class SettingsUi {
      */
     public static TextInputLayout dropdown(Context ctx, String hint, List<String> items,
                                            int selected, final OnPicked listener) {
-        TextInputLayout layout = new TextInputLayout(ctx, null,
-                com.google.android.material.R.attr.textInputOutlinedExposedDropdownMenuStyle);
+        TextInputLayout layout = (TextInputLayout) LayoutInflater.from(ctx)
+                .inflate(R.layout.field_dropdown, null, false);
         layout.setHint(hint);
-        // 代码里构造时样式属性不一定被套用，这里把描边外观与下拉箭头显式补上
-        layout.setBoxBackgroundMode(TextInputLayout.BOX_BACKGROUND_OUTLINE);
-        layout.setEndIconMode(TextInputLayout.END_ICON_DROPDOWN_MENU);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        params.topMargin = dp(ctx, 8);
-        layout.setLayoutParams(params);
 
-        MaterialAutoCompleteTextView field = new MaterialAutoCompleteTextView(ctx);
+        MaterialAutoCompleteTextView field = layout.findViewById(R.id.field_input);
         field.setInputType(InputType.TYPE_NULL);
         // 必须用 Material 自己的 item 布局，Spinner 的布局在 M3 菜单里高度与文字颜色都不对
         field.setAdapter(new ArrayAdapter<>(ctx,
                 com.google.android.material.R.layout.mtrl_auto_complete_simple_item, items));
-        field.setText(items.isEmpty() ? "" : items.get(Math.max(0, Math.min(selected, items.size() - 1))),
-                false);
+        field.setText(items.isEmpty()
+                ? "" : items.get(Math.max(0, Math.min(selected, items.size() - 1))), false);
         field.setOnItemClickListener((parent, view, position, id) -> listener.onPicked(position));
-        layout.addView(field);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(ctx, 8);
+        layout.setLayoutParams(params);
         return layout;
     }
 

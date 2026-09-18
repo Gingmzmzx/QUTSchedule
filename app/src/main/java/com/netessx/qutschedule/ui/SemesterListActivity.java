@@ -2,17 +2,16 @@ package com.netessx.qutschedule.ui;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
-import android.text.InputType;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.AppData;
@@ -116,15 +115,14 @@ public class SemesterListActivity extends BaseActivity {
     }
 
     private void rename(final Semester semester) {
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setText(semester.name);
+        final TextInputLayout input = SettingsUi.dialogField(this,
+                getString(R.string.semester_rename), semester.name);
         new MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.semester_rename)
-                .setView(input)
+                .setView(SettingsUi.dialogWrap(this, input))
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.save, (dialog, which) -> {
-                    semester.name = input.getText().toString().trim();
+                    semester.name = SettingsUi.text(input);
                     ScheduleStore.get(this).save();
                     build();
                 })

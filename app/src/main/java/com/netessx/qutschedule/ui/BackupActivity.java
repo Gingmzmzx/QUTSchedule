@@ -3,13 +3,14 @@ package com.netessx.qutschedule.ui;
 import android.Manifest;
 import android.net.Uri;
 import android.os.Bundle;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
+
+import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.backup.IcsExporter;
 import com.netessx.qutschedule.backup.JsonBackup;
@@ -25,9 +26,9 @@ import java.util.concurrent.Executors;
 public class BackupActivity extends BaseActivity {
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private EditText urlInput;
-    private EditText userInput;
-    private EditText passwordInput;
+    private TextInputLayout urlInput;
+    private TextInputLayout userInput;
+    private TextInputLayout passwordInput;
 
     private final ActivityResultLauncher<String> exportJson = registerForActivityResult(
             new ActivityResultContracts.CreateDocument("application/json"), uri -> {
@@ -147,9 +148,9 @@ public class BackupActivity extends BaseActivity {
 
     private void runWebDav(final boolean upload) {
         WebDavClient.Config config = new WebDavClient.Config();
-        config.url = urlInput.getText().toString().trim();
-        config.user = userInput.getText().toString().trim();
-        config.password = passwordInput.getText().toString();
+        config.url = SettingsUi.text(urlInput);
+        config.user = SettingsUi.text(userInput);
+        config.password = SettingsUi.raw(passwordInput);
         WebDavClient.save(this, config);
 
         executor.execute(() -> {
