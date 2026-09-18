@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView style="@style/FieldLabel" android:text="@string/profile_nickname" />
+        <EditText android:id="@+id/et_nickname" style="@style/FieldInput" android:inputType="text" />
+
+        <TextView style="@style/FieldLabel" android:text="@string/profile_signature" />
+        <EditText android:id="@+id/et_signature" style="@style/FieldInput" android:inputType="text" />
+
+        <TextView style="@style/FieldLabel" android:text="@string/profile_school" />
+        <EditText android:id="@+id/et_school" style="@style/FieldInput" android:inputType="text" />
+
+        <TextView style="@style/FieldLabel" android:text="@string/profile_college" />
+        <EditText android:id="@+id/et_college" style="@style/FieldInput" android:inputType="text" />
+
+        <TextView style="@style/FieldLabel" android:text="@string/profile_major" />
+        <EditText android:id="@+id/et_major" style="@style/FieldInput" android:inputType="text" />
+
+        <TextView style="@style/FieldLabel" android:text="@string/profile_grade" />
+        <EditText android:id="@+id/et_grade" style="@style/FieldInput" android:inputType="text" />
+
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/save" />
+    </LinearLayout>
+</ScrollView>

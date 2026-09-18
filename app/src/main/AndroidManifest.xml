@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- 上课期间切勿扰模式需要用户授予「勿扰访问」 -->
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <!-- 写入系统日历 -->
+    <uses-permission android:name="android.permission.READ_CALENDAR" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".QutScheduleApp"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.QUTSchedule">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 不能加 noHistory：跳去导入页时会被移出任务栈，导入页一关整个应用就退了 -->
+        <activity
+            android:name=".ui.OnboardingActivity"
+            android:exported="false"
+            android:label="@string/app_name" />
+
+        <activity
+            android:name=".ui.CourseEditActivity"
+            android:exported="false"
+            android:label="@string/title_edit_course"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.SettingsActivity"
+            android:exported="false"
+            android:label="@string/title_settings"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.ImportActivity"
+            android:exported="false"
+            android:label="@string/title_import"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.TodoEditActivity"
+            android:exported="false"
+            android:label="@string/todo_edit"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.ProfileActivity"
+            android:exported="false"
+            android:label="@string/mine_profile"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.SlotSchemeActivity"
+            android:exported="false"
+            android:label="@string/mine_slots"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.SemesterListActivity"
+            android:exported="false"
+            android:label="@string/mine_semester_list"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.CourseManageActivity"
+            android:exported="false"
+            android:label="@string/mine_course_manage"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.AppearanceActivity"
+            android:exported="false"
+            android:label="@string/mine_appearance"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.ReminderSettingsActivity"
+            android:exported="false"
+            android:label="@string/mine_reminder"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.HolidayActivity"
+            android:exported="false"
+            android:label="@string/mine_holiday"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.BackupActivity"
+            android:exported="false"
+            android:label="@string/mine_backup"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".ui.AboutActivity"
+            android:exported="false"
+            android:label="@string/mine_about"
+            android:parentActivityName=".MainActivity" />
+
+        <receiver
+            android:name=".reminder.ReminderReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".widget.ScheduleWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.netessx.qutschedule.action.WIDGET_REFRESH" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_schedule_info" />
+        </receiver>
+
+        <receiver
+            android:name=".reminder.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".live.LiveUpdateService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Shows the ongoing class session in the status bar" />
+        </service>
+
+    </application>
+
+</manifest>

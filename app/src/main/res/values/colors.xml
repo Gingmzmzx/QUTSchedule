@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 baseline 亮色令牌；开启动态取色后由系统壁纸配色覆盖 -->
+    <color name="colorPrimary">#FF6750A4</color>
+    <color name="colorOnPrimary">#FFFFFFFF</color>
+    <color name="colorPrimaryContainer">#FFEADDFF</color>
+    <color name="colorOnPrimaryContainer">#FF21005D</color>
+    <color name="colorSecondary">#FF625B71</color>
+    <color name="colorOnSecondary">#FFFFFFFF</color>
+    <color name="colorSecondaryContainer">#FFE8DEF8</color>
+    <color name="colorOnSecondaryContainer">#FF1D192B</color>
+    <color name="colorTertiary">#FF7D5260</color>
+    <color name="colorOnTertiary">#FFFFFFFF</color>
+    <color name="colorTertiaryContainer">#FFFFD8E4</color>
+    <color name="colorOnTertiaryContainer">#FF31111D</color>
+    <color name="colorError">#FFB3261E</color>
+    <color name="colorOnError">#FFFFFFFF</color>
+    <color name="colorErrorContainer">#FFF9DEDC</color>
+    <color name="colorOnErrorContainer">#FF410E0B</color>
+    <color name="colorBackground">#FFFFFBFE</color>
+    <color name="colorOnBackground">#FF1C1B1F</color>
+    <color name="colorSurface">#FFFFFBFE</color>
+    <color name="colorOnSurface">#FF1C1B1F</color>
+    <color name="colorSurfaceVariant">#FFE7E0EC</color>
+    <color name="colorOnSurfaceVariant">#FF49454F</color>
+    <color name="colorSurfaceContainer">#FFF3EDF7</color>
+    <color name="colorOutline">#FF79747E</color>
+    <color name="colorOutlineVariant">#FFCAC4D0</color>
+
+    <!-- 兼容旧引用，语义统一映射到 M3 令牌 -->
+    <color name="purple_200">@color/colorPrimary</color>
+    <color name="purple_500">@color/colorPrimary</color>
+    <color name="purple_700">@color/colorPrimary</color>
+    <color name="teal_200">@color/colorTertiary</color>
+    <color name="teal_700">@color/colorTertiary</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <color name="grid_line">#1F49454F</color>
+    <color name="grid_line_dark">#33FFFFFF</color>
+    <color name="today_column">#146750A4</color>
+    <color name="block_text">@color/colorOnSurface</color>
+    <color name="text_secondary">@color/colorOnSurfaceVariant</color>
+
+    <!-- 课程块配色：M3 强调色系 -->
+    <color name="block_0">#FFB4A7F5</color>
+    <color name="block_1">#FFF3B98F</color>
+    <color name="block_2">#FFA6D8A8</color>
+    <color name="block_3">#FFF2A9CE</color>
+    <color name="block_4">#FFC3B2FF</color>
+    <color name="block_5">#FF93D6D6</color>
+    <color name="block_6">#FFFFB3AE</color>
+    <color name="block_7">#FFE3CE8E</color>
+
+    <color name="type_club">#FF8FD98F</color>
+    <color name="type_research">#FFCBA6EA</color>
+    <color name="type_exam">#FFFFB3AE</color>
+    <color name="type_other">#FFB9C6CF</color>
+</resources>

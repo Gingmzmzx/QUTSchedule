@@ -1,0 +1,250 @@
+<resources>
+    <!-- 底部导航 -->
+    <string name="nav_today">今日</string>
+    <string name="nav_schedule">课表</string>
+    <string name="nav_agenda">日程</string>
+    <string name="nav_mine">我的</string>
+
+    <!-- 课表页 -->
+    <string name="jump_to_week">跳转到第几周</string>
+    <string name="slot_start_hint">起始节次</string>
+    <string name="slot_end_hint">结束节次</string>
+
+    <string name="action_edit">编辑</string>
+    <string name="action_delete">删除</string>
+    <string name="action_skip_week">第 %1$d 周停课</string>
+    <string name="skip_week_last">这是该课程唯一的上课周，要取消请直接删除课程</string>
+    <string name="save_failed_fmt">保存失败：%1$s</string>
+
+    <!-- 今日页 -->
+    <string name="today_next_title">下节课</string>
+    <string name="today_ongoing_title">正在上课</string>
+    <string name="today_none_left">今天的课已经上完了</string>
+    <string name="today_no_class">今天没有课</string>
+    <string name="today_countdown_fmt">%1$d 分钟后开始</string>
+    <string name="today_remaining_fmt">还剩 %1$d 分钟</string>
+    <string name="today_section_timeline">今日课程</string>
+    <string name="today_section_todo">今日待办</string>
+    <string name="today_section_tomorrow">明日预告</string>
+    <string name="today_state_finished">已结束</string>
+    <string name="today_state_ongoing">进行中</string>
+    <string name="today_state_upcoming">未开始</string>
+    <string name="today_no_todo">今天没有待办</string>
+    <string name="today_tomorrow_none">明天没有课</string>
+
+    <!-- 日程页 -->
+    <string name="agenda_expand_month">展开月历</string>
+    <string name="agenda_collapse_month">收起月历</string>
+    <string name="agenda_empty">这一天没有安排</string>
+    <string name="agenda_section_course">课程</string>
+    <string name="agenda_section_todo">待办与活动</string>
+
+    <!-- 待办 -->
+    <string name="todo_add">新增日程 / 待办</string>
+    <string name="todo_edit">编辑日程</string>
+    <string name="todo_title">标题</string>
+    <string name="todo_type">分类</string>
+    <string name="todo_all_day">不限时间</string>
+    <string name="todo_done">已完成</string>
+    <string name="type_todo">待办</string>
+    <string name="type_activity">活动</string>
+    <string name="type_homework">作业</string>
+
+    <!-- 我的页 -->
+    <string name="mine_group_schedule">课表</string>
+    <string name="mine_group_course">课程</string>
+    <string name="mine_group_pref">偏好</string>
+    <string name="mine_group_about">关于</string>
+    <string name="mine_profile">我的信息</string>
+    <string name="mine_profile_summary">昵称、个性签名、学校、学院、专业、年级</string>
+    <string name="mine_import_pdf">导入课表 PDF</string>
+    <string name="mine_import_pdf_summary">选择教务系统导出的课表 PDF，解析后预览再导入</string>
+    <string name="mine_semester">学期设置</string>
+    <string name="mine_semester_summary">学期名称、开学日期、总周数；显示周末与非本周课程</string>
+    <string name="mine_slots">自定义时间段</string>
+    <string name="mine_slots_summary">增删作息方案、按日期自动切换、改结束时间后后节顺延</string>
+    <string name="mine_semester_list">管理课表</string>
+    <string name="mine_semester_list_summary">新建学期、点击切换当前学期、长按重命名</string>
+    <string name="mine_course_manage">课程管理</string>
+    <string name="mine_course_manage_summary">按课程名聚合查看、整门重命名或删除、把某天的课整体调动</string>
+    <string name="mine_holiday">放假与调休</string>
+    <string name="mine_holiday_summary">自己设定哪天放假无课，以及哪天按另一天的课表上课</string>
+    <string name="holiday_aware">按放假与调休安排课表</string>
+    <string name="holiday_aware_hint">关闭后所有日期都按自身星期排课，已添加的规则会保留但不生效</string>
+    <string name="holiday_add_off">添加放假日</string>
+    <string name="holiday_add_swap">添加调休日</string>
+    <string name="holiday_pick_ref">这一天上哪一天的课</string>
+    <string name="holiday_empty">还没有添加放假或调休</string>
+    <string name="holiday_item_off_fmt">%1$s 周%2$s · 放假（无课）</string>
+    <string name="holiday_item_off_range_fmt">%1$s ~ %2$s · 放假（无课）</string>
+    <string name="holiday_single_day">只放这一天</string>
+    <string name="holiday_pick_end">选择结束日期</string>
+    <string name="holiday_off_start">放假从这一天开始</string>
+    <string name="holiday_item_swap_fmt">%1$s 周%2$s · 上 %3$s 的课</string>
+    <string name="holiday_swap_pick_date">调休上课的日期</string>
+    <string name="holiday_remove">删除这条规则</string>
+
+    <string name="mine_appearance">外观与样式</string>
+    <string name="mine_appearance_summary">主题风格、深浅色、动态取色；格子高度 / 圆角 / 间距 / 不透明度</string>
+    <string name="mine_reminder">课程提醒设置</string>
+    <string name="mine_reminder_summary">提前提醒分钟数、上课免打扰、节假日跳过、状态栏灵动岛</string>
+    <string name="mine_backup">备份与恢复</string>
+    <string name="mine_backup_summary">JSON 完整备份、ICS 日历导出、写入系统日历、WebDAV 云备份</string>
+    <string name="about_version_fmt">%1$s (%2$s)</string>
+    <string name="about_replay_onboarding">重新查看使用引导</string>
+    <string name="image_preview_hint">双指捏合可放大图片 · 双击快速缩放 · 单击返回</string>
+
+    <!-- 初次使用引导 -->
+    <string name="onboarding_skip">跳过</string>
+    <string name="onboarding_back">上一步</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_start">开始使用</string>
+    <string name="onboarding_step_fmt">第 %1$d / %2$d 步</string>
+
+    <string name="onboarding_welcome_title">欢迎使用 QUT课表</string>
+    <string name="onboarding_welcome_body">跟着下面几步走一遍，课表就配好了。\n\n全部数据只存在你的手机里，不会联网上传。</string>
+
+    <string name="onboarding_semester_title">先设置学期</string>
+    <string name="onboarding_semester_body">开学日期决定「今天第几周」怎么算，也决定每门课在哪几周出现。填第 1 周的周一即可，日期会自动对齐到周一。</string>
+    <string name="onboarding_semester_name">学期名称</string>
+    <string name="onboarding_semester_start">开学日期（第 1 周周一）</string>
+    <string name="onboarding_semester_weeks">学期总周数</string>
+    <string name="onboarding_need_start_title">还没设置开学日期</string>
+    <string name="onboarding_need_start_body">开学日期决定「今天第几周」怎么算，也决定每门课在哪几周出现，需要先选好才能继续。</string>
+    <string name="onboarding_need_start_action">去选择日期</string>
+
+    <!-- ===== 下载课表 PDF：三步的提示文字在这里改 ===== -->
+    <string name="onboarding_download_title">下载课表 PDF</string>
+    <string name="onboarding_download_body">在教务系统里下载课表PDF。</string>
+
+    <!-- 第 1 步（配截图 onboarding_1） -->
+    <string name="onboarding_download_step1_title">打开教务系统，进入个人课表查询</string>
+    <string name="onboarding_download_step1_body">在浏览器中打开教务系统，否则可能无法下载文件。</string>
+
+    <!-- 第 2 步（配截图 onboarding_2） -->
+    <string name="onboarding_download_step2_title">（重要！）切换显示方式</string>
+    <string name="onboarding_download_step2_body">选择「列表」方式显示</string>
+
+    <!-- 第 3 步（没有截图，只有文字） -->
+    <string name="onboarding_download_step3_title">打印并保存为 PDF</string>
+    <string name="onboarding_download_step3_body">点「输出PDF」，下载到手机。\n\n导入时选的就是这个文件。</string>
+    <!-- ===== 三步文案结束 ===== -->
+
+    <string name="onboarding_download_step_fmt">第 %1$d 步</string>
+    <string name="onboarding_download_shot_hint">截图待补充：把 %1$s 放进 res/drawable-nodpi/ 即可自动显示</string>
+    <string name="onboarding_download_fallback">还没填开学日期也不影响导入，随时可以在「我的 → 学期设置」里补。</string>
+
+    <string name="onboarding_import_title">导入课表 PDF</string>
+    <string name="onboarding_import_body">选中刚才下载的 PDF，解析后先预览，确认无误再导入。</string>
+    <string name="onboarding_import_button">选择 PDF 文件</string>
+    <string name="onboarding_import_done">已导入，可以继续下一步</string>
+    <string name="onboarding_import_later">也可以稍后在「我的 → 导入课表 PDF」里导入。</string>
+
+    <string name="onboarding_profile_title">完善个人信息</string>
+    <string name="onboarding_profile_body">填与不填都不影响使用，只是「我的」页面会好看一些。同样只存在本机。</string>
+
+    <string name="onboarding_done_title">都准备好了</string>
+    <string name="onboarding_done_body">之后想改任何一项，都可以在「我的」里找到对应入口。\n\n祝你新学期顺利。</string>
+
+    <string name="mine_about">关于</string>
+    <string name="mine_about_summary">版本号与数据存储说明</string>
+
+    <!-- 学期 -->
+    <string name="semester_add">新建学期</string>
+    <string name="semester_current">当前学期</string>
+    <string name="semester_set_current">设为当前学期</string>
+    <string name="semester_view">查看课表</string>
+    <string name="semester_rename">重命名</string>
+    <string name="semester_status_not_started">未开始</string>
+    <string name="semester_status_running">进行中</string>
+    <string name="semester_status_finished">已完成</string>
+    <string name="semester_progress_fmt">第 %1$d 周 / 共 %2$d 周 · 已过 %3$d%%</string>
+    <string name="semester_delete_last">至少要保留一个学期</string>
+
+    <!-- 时间段 -->
+    <string name="slot_add_scheme">新增方案</string>
+    <string name="slot_name">方案名称</string>
+    <string name="slot_range">自动生效区间（月-日，可留空）</string>
+    <string name="slot_range_hint">如 10-01 ~ 04-30，跨年也支持</string>
+    <string name="slot_add_row">增加一节</string>
+    <string name="slot_remove_row">删除本节</string>
+    <string name="slot_shift_hint">改动某一节的结束时间后，后面的节次会自动顺延</string>
+    <string name="slot_shifted_fmt">已顺延后 %1$d 节</string>
+
+    <!-- 课程管理 -->
+    <string name="course_manage_count_fmt">%1$d 门课程</string>
+    <string name="course_manage_rename">重命名课程</string>
+    <string name="course_manage_delete_all">删除该课程全部课次</string>
+    <string name="course_manage_move">课程调动</string>
+    <string name="course_manage_move_hint">把这一天的课整体调到另一个日期</string>
+    <string name="course_manage_moved_fmt">已调整 %1$d 条</string>
+    <string name="course_manage_credit">学分</string>
+    <string name="course_manage_assessment">考核方式</string>
+    <string name="course_manage_lab">实验课</string>
+
+    <!-- 外观 -->
+    <string name="appearance_theme">主题风格</string>
+    <string name="appearance_theme_scroll">书卷</string>
+    <string name="appearance_theme_clear">通透</string>
+    <string name="appearance_theme_soft">柔绘</string>
+    <string name="appearance_mode">主题模式</string>
+    <string name="appearance_mode_system">跟随系统</string>
+    <string name="appearance_mode_light">浅色</string>
+    <string name="appearance_mode_dark">深色</string>
+    <string name="appearance_dynamic">动态取色（Material You）</string>
+    <string name="appearance_dynamic_hint">基于系统壁纸生成配色，Android 12 及以上可用</string>
+    <string name="appearance_grid">课表外观</string>
+    <string name="appearance_grid_height">格子高度</string>
+    <string name="appearance_grid_corner">圆角</string>
+    <string name="appearance_grid_gap">间距</string>
+    <string name="appearance_grid_alpha">不透明度</string>
+    <string name="appearance_animation">动效速度</string>
+    <string name="appearance_reduced_motion">减弱动态效果</string>
+    <string name="appearance_reset">恢复默认配色</string>
+
+    <!-- 提醒设置 -->
+    <string name="reminder_lead">默认提前提醒（分钟）</string>
+    <string name="reminder_dnd">上课期间免打扰</string>
+    <string name="reminder_dnd_mode">免打扰方式</string>
+    <string name="reminder_dnd_silent">仅静音</string>
+    <string name="reminder_dnd_full">勿扰模式</string>
+    <string name="reminder_dnd_permission">需要「勿扰访问」权限才能切换勿扰模式</string>
+    <string name="reminder_holiday">节假日不提醒</string>
+    <string name="reminder_holiday_hint">内置法定节假日，放假期间不打扰</string>
+    <string name="reminder_live">状态栏 / 灵动岛显示当前课程</string>
+    <string name="reminder_live_hint">仅在当天第一节课前到最后一节课后常驻，其余时间不占用</string>
+
+    <!-- 备份 -->
+    <string name="backup_export_json">导出 JSON 备份</string>
+    <string name="backup_import_json">从 JSON 恢复</string>
+    <string name="backup_export_ics">导出 ICS 日历</string>
+    <string name="backup_export_ics_hint">可导入系统日历，自带课前提醒</string>
+    <string name="backup_calendar">写入系统日历</string>
+    <string name="backup_calendar_hint">把当前课表添加到系统日历账号</string>
+    <string name="backup_webdav">WebDAV 云备份</string>
+    <string name="backup_webdav_url">服务器地址</string>
+    <string name="backup_webdav_user">用户名</string>
+    <string name="backup_webdav_password">密码</string>
+    <string name="backup_upload">上传备份</string>
+    <string name="backup_download">下载恢复</string>
+    <string name="backup_ok">完成</string>
+    <string name="backup_failed_fmt">失败：%1$s</string>
+
+    <!-- 我的信息 -->
+    <string name="profile_nickname">昵称</string>
+    <string name="profile_signature">个性签名</string>
+    <string name="profile_school">学校</string>
+    <string name="profile_college">学院</string>
+    <string name="profile_major">专业</string>
+    <string name="profile_grade">年级</string>
+    <string name="profile_pick_avatar">选择头像</string>
+
+    <!-- 小组件 -->
+    <string name="widget_today">今日课程</string>
+    <string name="widget_tomorrow">明日课程</string>
+    <string name="widget_no_class">今天没有课</string>
+    <string name="widget_count_fmt">共 %1$d 节</string>
+    <string name="widget_description">课表概览：今天 / 明天的课程与当日课程数</string>
+
+    <string name="coming_soon">该页面正在施工中</string>
+</resources>

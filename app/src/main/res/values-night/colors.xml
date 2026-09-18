@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Material 3 baseline 深色令牌 -->
+    <color name="colorPrimary">#FFD0BCFF</color>
+    <color name="colorOnPrimary">#FF381E72</color>
+    <color name="colorPrimaryContainer">#FF4F378B</color>
+    <color name="colorOnPrimaryContainer">#FFEADDFF</color>
+    <color name="colorSecondary">#FFCCC2DC</color>
+    <color name="colorOnSecondary">#FF332D41</color>
+    <color name="colorSecondaryContainer">#FF4A4458</color>
+    <color name="colorOnSecondaryContainer">#FFE8DEF8</color>
+    <color name="colorTertiary">#FFEFB8C8</color>
+    <color name="colorOnTertiary">#FF492532</color>
+    <color name="colorTertiaryContainer">#FF633B48</color>
+    <color name="colorOnTertiaryContainer">#FFFFD8E4</color>
+    <color name="colorError">#FFF2B8B5</color>
+    <color name="colorOnError">#FF601410</color>
+    <color name="colorErrorContainer">#FF8C1D18</color>
+    <color name="colorOnErrorContainer">#FFF9DEDC</color>
+    <color name="colorBackground">#FF1C1B1F</color>
+    <color name="colorOnBackground">#FFE6E1E5</color>
+    <color name="colorSurface">#FF1C1B1F</color>
+    <color name="colorOnSurface">#FFE6E1E5</color>
+    <color name="colorSurfaceVariant">#FF49454F</color>
+    <color name="colorOnSurfaceVariant">#FFCAC4D0</color>
+    <color name="colorSurfaceContainer">#FF211F26</color>
+    <color name="colorOutline">#FF938F99</color>
+    <color name="colorOutlineVariant">#FF49454F</color>
+
+    <color name="grid_line">#33CAC4D0</color>
+    <color name="today_column">#33D0BCFF</color>
+
+    <!-- 深色下的课程块：降亮度，保证与深色底对比度足够 -->
+    <color name="block_0">#FF4A3F82</color>
+    <color name="block_1">#FF7A4B2A</color>
+    <color name="block_2">#FF33572F</color>
+    <color name="block_3">#FF6E3555</color>
+    <color name="block_4">#FF4F3F80</color>
+    <color name="block_5">#FF2C4F4F</color>
+    <color name="block_6">#FF7A3A38</color>
+    <color name="block_7">#FF5C4F28</color>
+
+    <color name="type_club">#FF33572F</color>
+    <color name="type_research">#FF4F3F80</color>
+    <color name="type_exam">#FF7A3A38</color>
+    <color name="type_other">#FF3A444A</color>
+</resources>

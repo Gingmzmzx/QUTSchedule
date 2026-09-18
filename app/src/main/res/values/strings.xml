@@ -1,0 +1,98 @@
+<resources>
+    <string name="app_name">QUT课表</string>
+
+    <string name="nav_week">周</string>
+    <string name="nav_day">天</string>
+    <string name="nav_month">月</string>
+    <string name="nav_more">更多</string>
+
+    <string name="title_edit_course">编辑日程</string>
+    <string name="title_add_course">新增日程</string>
+    <string name="title_settings">设置</string>
+    <string name="title_import">导入课表 PDF</string>
+
+    <string name="prev">上一页</string>
+    <string name="next">下一页</string>
+    <string name="today">今天</string>
+    <string name="add">添加</string>
+
+    <string name="week_title_fmt">第 %1$d 周 · %2$s ~ %3$s</string>
+    <string name="day_title_fmt">%1$s 星期%2$s</string>
+    <string name="month_title_fmt">%1$d 年 %2$d 月</string>
+    <string name="week_of_fmt">第 %1$d 周</string>
+    <string name="no_course">当天没有日程</string>
+    <string name="no_schedule_yet">还没有课表，去「更多」导入 PDF 或手动添加</string>
+
+    <string name="field_name">名称</string>
+    <string name="field_type">类型</string>
+    <string name="field_teacher">教师</string>
+    <string name="field_location">地点</string>
+    <string name="field_campus">校区</string>
+    <string name="field_note">备注</string>
+    <string name="field_repeat">重复方式</string>
+    <string name="field_day">星期</string>
+    <string name="field_slot">节次</string>
+    <string name="field_weeks">周次（如 4-17周、1-16周(双)、第5周）</string>
+    <string name="field_date">日期</string>
+    <string name="field_start_time">开始时间</string>
+    <string name="field_end_time">结束时间</string>
+    <string name="field_reminder">上课提醒</string>
+    <string name="field_reminder_lead">提前分钟</string>
+    <string name="repeat_weekly">每周重复</string>
+    <string name="repeat_once">单次日程</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="cancel">取消</string>
+    <string name="confirm_delete">确定删除「%1$s」？</string>
+
+    <string name="slot_fmt">第 %1$d 节</string>
+    <string name="slot_to_tip">至</string>
+    <string name="slot_range_fmt">第 %1$d-%2$d 节</string>
+
+    <string name="settings_term_name">学期名称</string>
+    <string name="settings_term_start">开学日期（第 1 周周一）</string>
+    <string name="settings_total_weeks">学期总周数</string>
+    <string name="settings_reminder">开启上课提醒</string>
+    <string name="settings_reminder_lead">默认提前提醒（分钟）</string>
+    <string name="settings_live_update">状态栏 / 灵动岛显示当前课程</string>
+    <string name="settings_slots">节次时间</string>
+    <string name="settings_pick_time">选择时间</string>
+    <string name="settings_notification_permission">需要通知权限才能收到提醒</string>
+
+    <string name="more_import">导入课表 PDF</string>
+    <string name="more_settings">学期与提醒设置</string>
+    <string name="more_add">新增日程（社团 / 研究院等）</string>
+    <string name="more_unscheduled">未排课的课程</string>
+    <string name="more_unscheduled_empty">没有未排课的课程</string>
+    <string name="more_about">关于</string>
+    <string name="more_about_text">课程表 · 数据全部保存在本机，不联网上传。\nPDF 解析基于青岛理工大学教务课表格式。</string>
+
+    <string name="import_pick">选择 PDF 文件</string>
+    <string name="import_parsing">正在解析…</string>
+    <string name="import_summary_fmt">解析到 %1$d 门课程、%2$d 条未排课记录</string>
+    <string name="import_failed">解析失败：%1$s</string>
+    <string name="import_confirm">导入并覆盖现有课表</string>
+    <string name="import_merge">追加到现有课表</string>
+    <string name="import_done">导入完成</string>
+    <string name="import_need_term">请先在设置中填写开学日期，否则无法推算周次</string>
+
+    <string name="channel_reminder_name">上课提醒</string>
+    <string name="channel_reminder_desc">上课前按设定时间提醒</string>
+    <string name="channel_live_name">当前课程</string>
+    <string name="channel_live_desc">在状态栏持续显示正在进行的课程</string>
+    <string name="notif_reminder_title_fmt">%1$s 即将开始</string>
+    <string name="notif_reminder_body_fmt">%1$s · %2$s · %3$s</string>
+    <string name="notif_now_fmt">正在上课 · %1$s</string>
+    <string name="notif_next_fmt">下一节 · %1$s</string>
+    <string name="notif_remaining_fmt">还剩 %1$d 分钟</string>
+    <string name="notif_minutes_fmt">%1$d 分钟后开始</string>
+
+    <string name="type_course">课程</string>
+    <string name="type_club">社团活动</string>
+    <string name="type_research">研究院活动</string>
+    <string name="type_exam">考试</string>
+    <string name="type_other">其他</string>
+
+    <string name="cd_color">颜色</string>
+    <string name="unscheduled_hint">这些课程来自课表底部的「其他课程」，点按可安排到具体时间</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 引导页的截图占位。放入 onboarding_1 / onboarding_2 / onboarding_3 后会自动被替换。 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#14808080" />
+            <corners android:radius="12dp" />
+            <stroke
+                android:width="1dp"
+                android:color="#66808080"
+                android:dashWidth="6dp"
+                android:dashGap="4dp" />
+        </shape>
+    </item>
+    <item
+        android:width="48dp"
+        android:height="48dp"
+        android:gravity="center">
+        <shape android:shape="rectangle">
+            <solid android:color="#33808080" />
+            <corners android:radius="6dp" />
+        </shape>
+    </item>
+</layer-list>

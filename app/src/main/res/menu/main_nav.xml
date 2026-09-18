@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_today" android:icon="@drawable/ic_day" android:title="@string/nav_today" />
+    <item android:id="@+id/nav_schedule" android:icon="@drawable/ic_week" android:title="@string/nav_schedule" />
+    <item android:id="@+id/nav_agenda" android:icon="@drawable/ic_month" android:title="@string/nav_agenda" />
+    <item android:id="@+id/nav_mine" android:icon="@drawable/ic_more" android:title="@string/nav_mine" />
+</menu>
