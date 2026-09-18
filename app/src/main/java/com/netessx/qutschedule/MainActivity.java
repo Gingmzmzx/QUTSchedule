@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         requestNotificationPermission();
-        // 一天最多查一次，且只在新版本存在时才弹提示
+        // 每次启动都查，只在新版本存在时才弹提示，失败静默忽略
         com.netessx.qutschedule.ui.UpdatePrompt.checkSilently(this);
     }
 

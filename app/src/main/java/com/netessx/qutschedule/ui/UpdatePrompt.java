@@ -11,8 +11,6 @@ import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.Prefs;
 import com.netessx.qutschedule.update.UpdateChecker;
 
-import java.time.LocalDate;
-
 /** 检查更新的界面部分：什么时候查、查完怎么显示。 */
 public final class UpdatePrompt {
 
@@ -30,18 +28,17 @@ public final class UpdatePrompt {
         });
     }
 
-    /** 启动时静默检查，一天最多一次，且只在新版本存在时打扰用户。 */
+    /**
+     * 启动时静默检查，只在新版本存在时打扰用户。
+     *
+     * <p>失败一律忽略：GitHub 在国内网络下不稳，为一次请求失败弹窗只会打扰用户，
+     * 想确认结果可以走「关于」里的手动检查。
+     */
     public static void checkSilently(final Activity activity) {
         Prefs prefs = ScheduleStore.get(activity).data().prefs;
         if (!prefs.autoCheckUpdate) {
             return;
         }
-        String today = LocalDate.now().toString();
-        if (today.equals(prefs.lastUpdateCheck)) {
-            return;
-        }
-        prefs.lastUpdateCheck = today;
-        ScheduleStore.get(activity).save();
 
         UpdateChecker.check(activity, result -> {
             if (activity.isFinishing() || activity.isDestroyed()) {
