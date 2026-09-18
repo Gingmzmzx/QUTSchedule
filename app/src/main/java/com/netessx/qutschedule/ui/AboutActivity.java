@@ -5,6 +5,7 @@ import android.widget.LinearLayout;
 
 import androidx.annotation.Nullable;
 import com.netessx.qutschedule.R;
+import com.netessx.qutschedule.data.ScheduleStore;
 
 /** 关于：版本与数据说明。 */
 public class AboutActivity extends BaseActivity {
@@ -18,6 +19,14 @@ public class AboutActivity extends BaseActivity {
         column.addView(SettingsUi.label(this, getString(R.string.about_version_fmt,
                 versionName(), versionCode())));
         column.addView(SettingsUi.label(this, getString(R.string.more_about_text)));
+        column.addView(SettingsUi.buttonRow(this, getString(R.string.about_check_update),
+                v -> UpdatePrompt.checkManual(this)));
+        column.addView(SettingsUi.switchRow(this, getString(R.string.about_auto_check_update),
+                ScheduleStore.get(this).data().prefs.autoCheckUpdate,
+                (button, checked) -> {
+                    ScheduleStore.get(this).data().prefs.autoCheckUpdate = checked;
+                    ScheduleStore.get(this).save();
+                }));
         column.addView(SettingsUi.buttonRow(this, getString(R.string.about_replay_onboarding),
                 v -> startActivity(OnboardingActivity.newIntent(this))));
         setPageTitle(getString(R.string.mine_about));

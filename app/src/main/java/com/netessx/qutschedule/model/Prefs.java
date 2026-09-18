@@ -50,6 +50,10 @@ public class Prefs {
     public boolean holidayAware = true;
     /** 是否已经看过初次使用引导。 */
     public boolean onboarded;
+    /** 启动时是否自动检查更新。 */
+    public boolean autoCheckUpdate = true;
+    /** 上次检查更新的日期，yyyy-MM-dd，保证一天最多查一次。 */
+    public String lastUpdateCheck = "";
 
     public boolean darkOn(boolean systemDark) {
         if (MODE_LIGHT.equals(themeMode)) {
@@ -124,6 +128,8 @@ public class Prefs {
         p.holidaySkip = holidaySkip;
         p.holidayAware = holidayAware;
         p.onboarded = onboarded;
+        p.autoCheckUpdate = autoCheckUpdate;
+        p.lastUpdateCheck = lastUpdateCheck;
         p.holidayAware = holidayAware;
         return p;
     }
