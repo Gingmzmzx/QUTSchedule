@@ -42,6 +42,10 @@
     <color name="block_text">@color/colorOnSurface</color>
     <color name="text_secondary">@color/colorOnSurfaceVariant</color>
 
+    <!-- 桌面小组件：深色模式由 values-night 覆盖，否则会白底白字 -->
+    <color name="widget_surface">#F2FFFFFF</color>
+    <color name="widget_stroke">#1A000000</color>
+
     <!-- 课程块配色：M3 强调色系 -->
     <color name="block_0">#FFB4A7F5</color>
     <color name="block_1">#FFF3B98F</color>

@@ -30,6 +30,10 @@
     <color name="grid_line">#33CAC4D0</color>
     <color name="today_column">#33D0BCFF</color>
 
+    <!-- 桌面小组件：跟深色主题走，避免白底白字 -->
+    <color name="widget_surface">#F21C1B1F</color>
+    <color name="widget_stroke">#33FFFFFF</color>
+
     <!-- 深色下的课程块：降亮度，保证与深色底对比度足够 -->
     <color name="block_0">#FF4A3F82</color>
     <color name="block_1">#FF7A4B2A</color>
