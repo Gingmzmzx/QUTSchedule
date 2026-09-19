@@ -19,6 +19,8 @@ public class AppData {
     public List<Todo> todos = new ArrayList<>();
     /** 用户自己配置的放假与调休规则，见 {@link DayRule}。 */
     public List<DayRule> dayRules = new ArrayList<>();
+    /** 一次性的临时调课 / 停课，见 {@link CourseShift}。 */
+    public List<CourseShift> shifts = new ArrayList<>();
     public Profile profile = new Profile();
     public Prefs prefs = new Prefs();
 
@@ -118,14 +120,21 @@ public class AppData {
         if (dayRules == null) {
             dayRules = new ArrayList<>();
         }
+        if (shifts == null) {
+            shifts = new ArrayList<>();
+        }
         // 备份文件或手改过的 JSON 里可能有 null 元素，先剔掉，否则下面取字段就会 NPE
         semesters.removeIf(java.util.Objects::isNull);
         schemes.removeIf(java.util.Objects::isNull);
         courses.removeIf(java.util.Objects::isNull);
         todos.removeIf(java.util.Objects::isNull);
         dayRules.removeIf(java.util.Objects::isNull);
+        shifts.removeIf(java.util.Objects::isNull);
         for (DayRule rule : dayRules) {
             rule.normalize();
+        }
+        for (CourseShift shift : shifts) {
+            shift.normalize();
         }
 
         if (schemes.isEmpty()) {

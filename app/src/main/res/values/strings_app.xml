@@ -14,6 +14,20 @@
     <string name="action_delete">删除</string>
     <string name="action_skip_week">第 %1$d 周停课</string>
     <string name="skip_week_last">这是该课程唯一的上课周，要取消请直接删除课程</string>
+
+    <!-- 临时调课 / 停课 -->
+    <string name="action_shift_move">临时调课到…</string>
+    <string name="action_shift_cancel">本次停课</string>
+    <string name="action_shift_undo">撤销本次调整</string>
+    <string name="shift_pick_target">选择挪到哪一天</string>
+    <string name="shift_pick_target_title">临时调课</string>
+    <string name="shift_keep_slot_fmt">沿用原节次（第 %1$d–%2$d 节）</string>
+    <string name="shift_moved_fmt">已挪到 %1$s</string>
+    <string name="shift_cancelled_fmt">已停课：%1$s</string>
+    <string name="shift_undone">已撤销这次调整</string>
+    <string name="undo">撤销</string>
+    <string name="week_add_class">在这一天加一节课</string>
+    <string name="week_add_todo">在这一天加一条待办</string>
     <string name="save_failed_fmt">保存失败：%1$s</string>
 
     <!-- 今日页 -->
@@ -126,6 +140,12 @@
     <string name="onboarding_need_start_body">开学日期决定「今天第几周」怎么算，也决定每门课在哪几周出现，需要先选好才能继续。</string>
     <string name="onboarding_need_start_action">去选择日期</string>
 
+    <!-- 导入完成后介绍怎么用 -->
+    <string name="onboarding_tips_title">课表怎么用</string>
+    <string name="onboarding_tips_body">左右滑动切换周次，点顶部的标题可以直接跳到第几周。\n\n长按一节课程，可以：\n· 临时调课到… —— 只把这节课挪到别的日期，还能顺便改节次，原课表不动；\n· 本次停课 —— 只停这一次，撤回了就恢复；\n· 第 N 周停课 / 编辑 / 删除。\n\n长按空白的格子，可以在那一天临时加一节课，或者加一条待办。\n\n单击课程块可以查看和修改它的详细信息。</string>
+    <string name="onboarding_settings_title">其他功能在哪</string>
+    <string name="onboarding_settings_body">底部「今日」页看当天的课与待办，「日程」页按月挑日期。\n\n「我的」里可以找到：\n· 放假与调休 —— 自己设定哪天不上课、哪天按另一天的课表上课；\n· 课程管理 —— 按课程名查看、重命名、整门删除，也能把一整天的课整体挪走；\n· 课程提醒设置 —— 提前多久提醒、上课时免打扰；\n· 外观与样式 —— 主题、深浅色，以及课表格子的高度和间距；\n· 备份与恢复 —— 导出 JSON / ICS 备份，或备份到 WebDAV 网盘。</string>
+
     <!-- ===== 下载课表 PDF：三步的提示文字在这里改 ===== -->
     <string name="onboarding_download_title">下载课表 PDF</string>
     <string name="onboarding_download_body">在教务系统里下载课表PDF。</string>
@@ -184,12 +204,20 @@
     <string name="slot_shift_hint">改动某一节的结束时间后，后面的节次会自动顺延</string>
     <string name="slot_shifted_fmt">已顺延后 %1$d 节</string>
 
+    <!-- 楼层错峰：同一大节按楼层用两套时间（黄岛校区上午三四节） -->
+    <string name="slot_floor_edit">第 %1$s 节 · 按楼层区分时间</string>
+    <string name="slot_floor_fmt">第 %1$s 节 · %2$d 层及以上 %3$s–%4$s</string>
+    <string name="slot_floor_title">第 %1$s 节按楼层区分</string>
+    <string name="slot_floor_from">起始楼层（含这层）</string>
+    <string name="slot_floor_off">不用楼层区分</string>
+    <string name="slot_floor_hint">房间号里认得出楼层才生效，比如 A302 是 3 楼、B404 是 4 楼；认不出就按上面的时间。</string>
+
     <!-- 课程管理 -->
     <string name="course_manage_count_fmt">%1$d 门课程</string>
     <string name="course_manage_rename">重命名课程</string>
     <string name="course_manage_delete_all">删除该课程全部课次</string>
     <string name="course_manage_move">课程调动</string>
-    <string name="course_manage_move_hint">把这一天的课整体调到另一个日期</string>
+    <string name="course_manage_move_hint">把这一天的课整体挪到另一天，之后可以在目标日期逐条撤销</string>
     <string name="course_manage_moved_fmt">已调整 %1$d 条</string>
     <string name="course_manage_credit">学分</string>
     <string name="course_manage_assessment">考核方式</string>

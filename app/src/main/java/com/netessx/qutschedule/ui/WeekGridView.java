@@ -37,7 +37,12 @@ public class WeekGridView extends View {
     public interface OnCourseListener {
         void onCourseClick(Course course);
 
-        void onCourseLongClick(Course course);
+        void onCourseLongClick(Course course, LocalDate date);
+    }
+
+    /** 长按没有课的格子：用来在这一天临时加一节课。 */
+    public interface OnEmptyLongClickListener {
+        void onEmptyLongClick(LocalDate date);
     }
 
     public interface OnWeekChangeListener {
@@ -55,6 +60,8 @@ public class WeekGridView extends View {
 
     private final List<Course> hitCourses = new ArrayList<>();
     private final List<RectF> hitRects = new ArrayList<>();
+    /** 与 hitCourses 一一对应，长按时要知道这块课在哪一天，临时调整以它为基准。 */
+    private final List<LocalDate> hitDates = new ArrayList<>();
 
     private Semester semester;
     private TimeScheme scheme;
@@ -67,6 +74,7 @@ public class WeekGridView extends View {
     private OnCourseListener courseListener;
     private OnWeekChangeListener weekChangeListener;
     private OnTitleClickListener titleListener;
+    private OnEmptyLongClickListener emptyLongClickListener;
     private final GestureDetector detector;
     private final float density;
     /** 由 onMeasure 按「格子高度」偏好算好，onDraw 直接用。 */
@@ -106,9 +114,14 @@ public class WeekGridView extends View {
             public void onLongPress(MotionEvent e) {
                 Course course = courseAt(e.getX(), e.getY());
                 if (course != null && courseListener != null) {
-                    courseListener.onCourseLongClick(course);
+                    courseListener.onCourseLongClick(course, dateOf(course));
                 } else if (course == null && titleListener != null && e.getY() < headerHeight()) {
                     titleListener.onTitleClick();
+                } else if (course == null && emptyLongClickListener != null) {
+                    LocalDate date = dayAt(e.getX());
+                    if (date != null) {
+                        emptyLongClickListener.onEmptyLongClick(date);
+                    }
                 }
             }
 
@@ -161,6 +174,10 @@ public class WeekGridView extends View {
         this.titleListener = listener;
     }
 
+    public void setOnEmptyLongClickListener(OnEmptyLongClickListener listener) {
+        this.emptyLongClickListener = listener;
+    }
+
     private int daysShown() {
         return prefs.showWeekend || weekendHasCourses() ? 7 : 5;
     }
@@ -211,11 +228,33 @@ public class WeekGridView extends View {
         return null;
     }
 
+    /** 某个课程块画在哪一天；绘制时记的，比按坐标反推可靠。 */
+    private LocalDate dateOf(Course course) {
+        int index = hitCourses.lastIndexOf(course);
+        return index >= 0 && index < hitDates.size() ? hitDates.get(index) : null;
+    }
+
+    /** 某一列对应的日期；点在时间列或网格外返回 null。 */
+    private LocalDate dayAt(float x) {
+        if (monday == null) {
+            return null;
+        }
+        int days = daysShown();
+        float gridLeft = density * 2 + timeColumnWidth();
+        float colW = (getWidth() - density * 2 - gridLeft) / days;
+        if (colW <= 0) {
+            return null;
+        }
+        int day = (int) ((x - gridLeft) / colW);
+        return day < 0 || day >= days ? null : monday.plusDays(day);
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         hitRects.clear();
         hitCourses.clear();
+        hitDates.clear();
 
         int days = daysShown();
         float pad = density * 2;
@@ -330,10 +369,13 @@ public class WeekGridView extends View {
                 if (course.endSlot % 2 == 1) {
                     blockBottom -= half;
                 }
+                float gap = prefs.gridGap * density;
+                // 上下也用设置里的间距，否则相邻两节课会严丝合缝地贴在一起
+                blockTop += gap;
+                blockBottom -= gap;
                 if (blockBottom - blockTop < 16 * density) {
                     blockBottom = blockTop + 16 * density;
                 }
-                float gap = prefs.gridGap * density;
                 float blockLeft = left + colW * day + gap;
                 float blockRight = blockLeft + colW - gap * 2;
 
@@ -346,6 +388,7 @@ public class WeekGridView extends View {
 
                 hitRects.add(new RectF(rect));
                 hitCourses.add(course);
+                hitDates.add(monday == null ? null : monday.plusDays(day));
 
                 drawBlockText(canvas, course, rect);
             }

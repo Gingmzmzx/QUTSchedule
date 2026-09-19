@@ -33,7 +33,7 @@ import com.netessx.qutschedule.util.Dates;
 import java.time.LocalDate;
 
 /**
- * 初次使用引导：设置学期 → 下载 PDF → 导入 PDF → 个人信息。
+ * 初次使用引导：设置学期 → 下载 PDF → 导入 PDF → 用法速览 → 个人信息。
  *
  * <p>每一步都可以跳过；点「跳过」或走完最后一步都会把 {@code prefs.onboarded} 置为 true。
  */
@@ -43,9 +43,11 @@ public class OnboardingActivity extends AppCompatActivity {
     private static final int STEP_SEMESTER = 1;
     private static final int STEP_DOWNLOAD = 2;
     private static final int STEP_IMPORT = 3;
-    private static final int STEP_PROFILE = 4;
-    private static final int STEP_DONE = 5;
-    private static final int STEP_COUNT = 6;
+    private static final int STEP_TIPS = 4;
+    private static final int STEP_SETTINGS = 5;
+    private static final int STEP_PROFILE = 6;
+    private static final int STEP_DONE = 7;
+    private static final int STEP_COUNT = 8;
 
     /** 下载课表的一步。文字改 res/values/strings_app.xml；{@code imageName} 为 null 表示这步不放截图。 */
     private static final class DownloadStep {
@@ -179,6 +181,11 @@ public class OnboardingActivity extends AppCompatActivity {
                 return buildDownloadPage();
             case STEP_IMPORT:
                 return buildImportPage();
+            case STEP_TIPS:
+                return simplePage(R.string.onboarding_tips_title, R.string.onboarding_tips_body);
+            case STEP_SETTINGS:
+                return simplePage(R.string.onboarding_settings_title,
+                        R.string.onboarding_settings_body);
             case STEP_PROFILE:
                 return buildProfilePage();
             case STEP_DONE:

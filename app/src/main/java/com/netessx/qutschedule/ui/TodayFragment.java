@@ -174,7 +174,7 @@ public class TodayFragment extends Fragment {
 
             row.setOnClickListener(v -> ((MainActivity) requireActivity()).openEditor(course));
             row.setOnLongClickListener(v -> {
-                CourseActions.show(ctx, course, ScheduleRepository.weekOf(ctx, today),
+                CourseActions.show(ctx, course, today,
                         () -> ((MainActivity) requireActivity()).refreshAll());
                 return true;
             });

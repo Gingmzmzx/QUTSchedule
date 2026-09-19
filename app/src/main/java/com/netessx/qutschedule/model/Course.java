@@ -42,6 +42,11 @@ public class Course {
     public String assessment = "";
     /** 结构化字段：是否实验课。 */
     public boolean lab;
+    /**
+     * 运行期标记：这条是临时调课挪过来的，值是对应的 {@link CourseShift#id}。
+     * transient，不写入 JSON；原课程身上永远是 null。
+     */
+    public transient String shiftId;
 
     public boolean isOneOff() {
         return date != null && !date.isEmpty();

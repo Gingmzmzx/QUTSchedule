@@ -3,10 +3,12 @@ package com.netessx.qutschedule.data;
 import android.content.Context;
 
 import com.netessx.qutschedule.model.Course;
+import com.netessx.qutschedule.model.CourseShift;
 import com.netessx.qutschedule.model.DayRule;
 import com.netessx.qutschedule.model.Semester;
 import com.netessx.qutschedule.model.TimeScheme;
 import com.netessx.qutschedule.model.Todo;
+import com.netessx.qutschedule.util.RoomFloor;
 import com.netessx.qutschedule.util.TimeSlots;
 
 import java.time.LocalDate;
@@ -42,7 +44,24 @@ public final class ScheduleRepository {
     private static final String[] WEEK_NAMES = {"一", "二", "三", "四", "五", "六", "日"};
 
     public static List<Course> coursesOn(Context ctx, LocalDate day, int weekNumber) {
-        return resolve(ctx, day, weekNumber, 0);
+        // 临时调整只能在 resolve 之外套：调休分支会提前递归返回，套在里面会漏掉调休日
+        List<Course> out = resolve(ctx, day, weekNumber, 0);
+        applyShifts(ctx, day, out);
+        return out;
+    }
+
+    /** 应用这一天的临时调课 / 停课；挪进来的课要重新排一次序。 */
+    private static void applyShifts(Context ctx, LocalDate day, List<Course> out) {
+        ScheduleStore store = ScheduleStore.get(ctx);
+        List<CourseShift> shifts = store.shifts();
+        if (shifts.isEmpty()) {
+            return;
+        }
+        int before = out.size();
+        CourseShift.apply(out, shifts, day.toString(), store::findCourse);
+        if (out.size() != before) {
+            sort(out, ctx);
+        }
     }
 
     /** 调休链最长跟这么多层，避免用户把 A 指向 B、B 又指回 A 时递归不停。 */
@@ -196,8 +215,10 @@ public final class ScheduleRepository {
             return new LocalTime[]{start, end};
         }
         TimeScheme scheme = schemeFor(ctx, date);
-        int start = TimeSlots.minutes(scheme.startOf(course.startSlot));
-        int end = TimeSlots.minutes(scheme.endOf(course.endSlot));
+        // 同一节课不同楼层可能错峰上下课，楼层从教室编号推（A302 → 3 楼），认不出按普通时间
+        int floor = RoomFloor.of(course.location);
+        int start = TimeSlots.minutes(scheme.startOf(course.startSlot, floor));
+        int end = TimeSlots.minutes(scheme.endOf(course.endSlot, floor));
         if (start < 0) {
             start = TimeSlots.minutes(TimeSlots.DEFAULT_START[0]);
         }
@@ -272,7 +293,8 @@ public final class ScheduleRepository {
                 .comparingInt((Course c) -> {
                     int minutes = c.isOneOff()
                             ? TimeSlots.minutes(c.startTime)
-                            : TimeSlots.minutes(schemeFor(ctx, today).startOf(c.startSlot));
+                            : TimeSlots.minutes(schemeFor(ctx, today)
+                                    .startOf(c.startSlot, RoomFloor.of(c.location)));
                     return minutes < 0 ? 0 : minutes;
                 })
                 .thenComparing(c -> c.name == null ? "" : c.name));

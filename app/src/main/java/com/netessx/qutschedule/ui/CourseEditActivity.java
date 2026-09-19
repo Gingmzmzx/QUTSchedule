@@ -37,6 +37,8 @@ import java.util.List;
 public class CourseEditActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "course_id";
+    /** 新建时预置成这一天的单次日程，用于「临时加一节课」。 */
+    public static final String EXTRA_DATE = "date";
 
     private static final String TAG = "CourseEditActivity";
 
@@ -75,6 +77,13 @@ public class CourseEditActivity extends BaseActivity {
         return intent;
     }
 
+    /** 新建一节课，日期预置好 —— 周视图长按空白格走这里。 */
+    public static Intent intentForNew(Context ctx, LocalDate date) {
+        Intent intent = new Intent(ctx, CourseEditActivity.class);
+        intent.putExtra(EXTRA_DATE, date.toString());
+        return intent;
+    }
+
     private String onceStart = "09:00";
     private String onceEnd = "10:00";
 
@@ -95,6 +104,12 @@ public class CourseEditActivity extends BaseActivity {
             Semester semester = ScheduleStore.get(this).currentSemester();
             editing.weekSpec = "1-" + Math.max(1, semester.totalWeeks) + "周";
             editing.weeks = WeekSpec.parse(editing.weekSpec, 40);
+            // 从周视图空白格进来时，直接落成这一天的单次课
+            LocalDate preset = Dates.parse(getIntent().getStringExtra(EXTRA_DATE));
+            if (preset != null) {
+                editing.date = preset.toString();
+                editing.dayOfWeek = preset.getDayOfWeek().getValue();
+            }
             findViewById(R.id.btn_delete).setVisibility(View.GONE);
         } else {
             setPageTitle(getString(R.string.title_edit_course));

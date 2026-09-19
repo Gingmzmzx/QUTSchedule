@@ -6,6 +6,7 @@ import android.net.Uri;
 import com.netessx.qutschedule.data.ScheduleRepository;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.Course;
+import com.netessx.qutschedule.model.CourseShift;
 import com.netessx.qutschedule.model.Semester;
 import com.netessx.qutschedule.model.Todo;
 import com.netessx.qutschedule.util.Dates;
@@ -60,9 +61,20 @@ public final class IcsExporter {
                 .append("METHOD:PUBLISH\r\n");
 
         if (semester.isConfigured()) {
+            List<CourseShift> shifts = ScheduleStore.get(ctx).shifts();
             for (Course course : ScheduleStore.get(ctx).coursesOf(semester.id)) {
                 if (!course.isUnscheduled()) {
-                    appendCourse(ctx, sb, course, semester, reminderMinutes);
+                    appendCourse(ctx, sb, course, semester, reminderMinutes, shifts);
+                }
+            }
+            // 临时挪过来的课另起一条 VEVENT：原课那一次已经被过滤掉了
+            for (CourseShift shift : shifts) {
+                if (shift == null || !shift.isValid() || !shift.isMove()) {
+                    continue;
+                }
+                Course origin = ScheduleStore.get(ctx).findCourse(shift.courseId);
+                if (origin != null && !origin.isUnscheduled()) {
+                    appendMoved(ctx, sb, origin, shift, reminderMinutes);
                 }
             }
         }
@@ -75,7 +87,8 @@ public final class IcsExporter {
     }
 
     private static void appendCourse(Context ctx, StringBuilder sb, Course course,
-                                     Semester semester, int reminderMinutes) {
+                                     Semester semester, int reminderMinutes,
+                                     List<CourseShift> shifts) {
         List<LocalDate> dates = new ArrayList<>();
         if (course.isOneOff()) {
             LocalDate date = Dates.parse(course.date);
@@ -90,6 +103,8 @@ public final class IcsExporter {
                 }
             }
         }
+        // 被临时停掉 / 挪走的那几次不再出现在原日期上
+        dates.removeIf(date -> CourseShift.onDate(shifts, course.id, date.toString()) != null);
         if (dates.isEmpty()) {
             return;
         }
@@ -130,6 +145,36 @@ public final class IcsExporter {
         }
         appendAlarm(sb, course.name,
                 course.leadMinutes(ScheduleStore.get(ctx).data().prefs.defaultReminderMinutes),
+                reminderMinutes);
+        sb.append("END:VEVENT\r\n");
+    }
+
+    /** 临时调课挪过去的那一次：单独一条 VEVENT，节次被覆盖时时间跟着变。 */
+    private static void appendMoved(Context ctx, StringBuilder sb, Course origin, CourseShift shift,
+                                    int reminderMinutes) {
+        LocalDate target = Dates.parse(shift.toDate);
+        if (target == null) {
+            return;
+        }
+        Course moved = origin.copy();
+        moved.startSlot = shift.startSlotOf(origin);
+        moved.endSlot = shift.endSlotOf(origin);
+        LocalTime[] times = ScheduleRepository.timesOf(ctx, moved, target);
+
+        sb.append("BEGIN:VEVENT\r\n");
+        append(sb, "UID", origin.id + "-shift-" + shift.id + "@qutschedule");
+        append(sb, "DTSTAMP", utc(LocalDateTime.now()));
+        append(sb, "DTSTART", utc(LocalDateTime.of(target, times[0])));
+        append(sb, "DTEND", utc(LocalDateTime.of(target, times[1])));
+        append(sb, "SUMMARY", origin.name + "（调课）");
+        if (origin.location != null && !origin.location.isEmpty()) {
+            append(sb, "LOCATION", origin.location);
+        }
+        if (origin.teacher != null && !origin.teacher.isEmpty()) {
+            append(sb, "DESCRIPTION", origin.teacher);
+        }
+        appendAlarm(sb, origin.name,
+                origin.leadMinutes(ScheduleStore.get(ctx).data().prefs.defaultReminderMinutes),
                 reminderMinutes);
         sb.append("END:VEVENT\r\n");
     }

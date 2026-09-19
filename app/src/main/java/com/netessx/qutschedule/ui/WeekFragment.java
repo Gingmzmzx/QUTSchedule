@@ -58,14 +58,14 @@ public class WeekFragment extends Fragment {
             }
 
             @Override
-            public void onCourseLongClick(Course course) {
-                CourseActions.show(requireContext(), course,
-                        ScheduleRepository.weekOf(requireContext(), LocalDate.now()),
+            public void onCourseLongClick(Course course, LocalDate date) {
+                CourseActions.show(requireContext(), course, date,
                         () -> ((MainActivity) requireActivity()).refreshAll());
             }
         });
         grid.setOnWeekChangeListener(this::shiftWeek);
         grid.setOnTitleClickListener(this::showWeekPicker);
+        grid.setOnEmptyLongClickListener(this::showAddMenu);
 
         ImageButton prev = view.findViewById(R.id.btn_prev);
         ImageButton next = view.findViewById(R.id.btn_next);
@@ -82,6 +82,24 @@ public class WeekFragment extends Fragment {
         int total = Math.max(1, semester.totalWeeks);
         weekNumber = Math.max(1, Math.min(total, weekNumber + delta));
         refresh();
+    }
+
+    /** 长按空白格：在这一天临时加一节课，或者加一条待办。 */
+    private void showAddMenu(LocalDate date) {
+        String[] actions = {
+                getString(R.string.week_add_class),
+                getString(R.string.week_add_todo),
+        };
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(Dates.format(date) + " 周" + Dates.weekName(date))
+                .setItems(actions, (dialog, which) -> {
+                    if (which == 0) {
+                        startActivity(CourseEditActivity.intentForNew(requireContext(), date));
+                    } else {
+                        startActivity(TodoEditActivity.intentFor(requireContext(), null, date));
+                    }
+                })
+                .show();
     }
 
     /** 点标题弹出周次列表，直接跳到目标周。 */

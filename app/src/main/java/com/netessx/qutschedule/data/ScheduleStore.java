@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.netessx.qutschedule.model.AppData;
 import com.netessx.qutschedule.model.Course;
+import com.netessx.qutschedule.model.CourseShift;
 import com.netessx.qutschedule.model.Semester;
 import com.netessx.qutschedule.model.TimeScheme;
 import com.netessx.qutschedule.model.Todo;
@@ -240,6 +241,8 @@ public class ScheduleStore {
 
     public synchronized void removeCourse(String id) {
         data.courses.removeIf(course -> id.equals(course.id));
+        // 课程没了，针对它的临时调整也就没意义了，否则会留下指向不存在课程的孤儿记录
+        data.shifts.removeIf(shift -> id.equals(shift.courseId));
         save();
     }
 
@@ -261,6 +264,31 @@ public class ScheduleStore {
 
     public synchronized void removeTodo(String id) {
         data.todos.removeIf(todo -> id.equals(todo.id));
+        save();
+    }
+
+    public synchronized List<CourseShift> shifts() {
+        return new ArrayList<>(data.shifts);
+    }
+
+    public synchronized void upsertShift(CourseShift shift) {
+        if (shift == null) {
+            return;
+        }
+        shift.normalize();
+        for (int i = 0; i < data.shifts.size(); i++) {
+            if (data.shifts.get(i).id.equals(shift.id)) {
+                data.shifts.set(i, shift);
+                save();
+                return;
+            }
+        }
+        data.shifts.add(shift);
+        save();
+    }
+
+    public synchronized void removeShift(String id) {
+        data.shifts.removeIf(shift -> id.equals(shift.id));
         save();
     }
 

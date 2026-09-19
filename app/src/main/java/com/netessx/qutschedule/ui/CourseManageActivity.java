@@ -14,18 +14,14 @@ import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleRepository;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.Course;
+import com.netessx.qutschedule.model.CourseShift;
 import com.netessx.qutschedule.reminder.ReminderScheduler;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /** 课程管理：按课程名聚合查看 / 编辑，支持整门删除与课程调动。 */
 public class CourseManageActivity extends BaseActivity {
-
-    private static final DateTimeFormatter HM = DateTimeFormatter.ofPattern("HH:mm");
 
     private ScheduleStore store;
     private LinearLayout column;
@@ -133,7 +129,7 @@ public class CourseManageActivity extends BaseActivity {
                 .show();
     }
 
-    /** 把某一天的课整体调到另一天：原课次摘掉那一周，目标日生成一次单次课。 */
+    /** 把某一天的课整体调到另一天：给当天每门课各写一条临时调整，随时可撤销。 */
     private void moveDay() {
         final LocalDate today = LocalDate.now();
         new DatePickerDialog(this, (view, y1, m1, d1) -> {
@@ -150,28 +146,9 @@ public class CourseManageActivity extends BaseActivity {
 
     private int applyMove(LocalDate source, LocalDate target) {
         List<Course> occurrences = ScheduleRepository.coursesOn(this, source);
-        int sourceWeek = ScheduleRepository.weekOf(this, source);
         int moved = 0;
         for (Course course : occurrences) {
-            Course oneOff = course.copy();
-            oneOff.id = UUID.randomUUID().toString();
-            oneOff.date = target.toString();
-            oneOff.weeks = new ArrayList<>();
-            oneOff.weekSpec = "";
-            oneOff.custom = true;
-            oneOff.dayOfWeek = target.getDayOfWeek().getValue();
-            oneOff.startTime = ScheduleRepository.timesOf(this, course, source)[0].format(HM);
-            oneOff.endTime = ScheduleRepository.timesOf(this, course, source)[1].format(HM);
-            store.upsertCourse(oneOff);
-
-            if (course.isOneOff()) {
-                store.removeCourse(course.id);
-            } else if (course.weeks.contains(sourceWeek)) {
-                Course trimmed = course.copy();
-                trimmed.weeks = new ArrayList<>(course.weeks);
-                trimmed.weeks.remove(Integer.valueOf(sourceWeek));
-                store.upsertCourse(trimmed);
-            }
+            store.upsertShift(CourseShift.move(course.id, source.toString(), target.toString()));
             moved++;
         }
         return moved;

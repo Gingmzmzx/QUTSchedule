@@ -96,7 +96,7 @@ public class SlotSchemeActivity extends BaseActivity {
         LinearLayout slotButtons = new LinearLayout(this);
         slotButtons.setOrientation(LinearLayout.HORIZONTAL);
         slotButtons.addView(SettingsUi.buttonRow(this, getString(R.string.slot_add_row), v -> {
-            scheme.slots.add(new TimeScheme.Slot("08:00", "09:40"));
+            scheme.slots.add(new TimeScheme.Slot("08:00", "09:50"));
             rebuildSlots();
         }), weight());
         slotButtons.addView(SettingsUi.buttonRow(this, getString(R.string.slot_remove_row), v -> {
@@ -135,6 +135,75 @@ public class SlotSchemeActivity extends BaseActivity {
             row.addView(SettingsUi.buttonRow(this, slot.end,
                     v -> pickTime(index, false, (Button) v)), weight());
             slotBox.addView(row);
+
+            String band = (i * 2 + 1) + "-" + (i * 2 + 2);
+            slotBox.addView(SettingsUi.buttonRow(this, slot.hasFloorSplit()
+                            ? getString(R.string.slot_floor_fmt, band, slot.floorFrom,
+                                    slot.floorStart, slot.floorEnd)
+                            : getString(R.string.slot_floor_edit, band),
+                    v -> editFloorSplit(index)));
+        }
+    }
+
+    /** 楼层错峰：这一大节在某个楼层以上改用另一套上下课时间。 */
+    private void editFloorSplit(final int index) {
+        final TimeScheme.Slot slot = scheme.slots.get(index);
+        final boolean existing = slot.hasFloorSplit();
+        final int[] floor = {existing ? slot.floorFrom : 4};
+        final String[] start = {existing ? slot.floorStart
+                : TimeSlots.format(TimeSlots.minutes(slot.start) + 15)};
+        final String[] end = {existing ? slot.floorEnd
+                : TimeSlots.format(TimeSlots.minutes(slot.end) + 15)};
+
+        LinearLayout column = new LinearLayout(this);
+        column.setOrientation(LinearLayout.VERTICAL);
+        final TextInputLayout floorInput = SettingsUi.numberRow(this,
+                getString(R.string.slot_floor_from), String.valueOf(floor[0]));
+        column.addView(floorInput);
+        column.addView(SettingsUi.buttonRow(this, start[0],
+                v -> pickFloorTime(start, (Button) v)));
+        column.addView(SettingsUi.buttonRow(this, end[0],
+                v -> pickFloorTime(end, (Button) v)));
+        column.addView(SettingsUi.label(this, getString(R.string.slot_floor_hint)));
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(this)
+                .setTitle(getString(R.string.slot_floor_title,
+                        (index * 2 + 1) + "-" + (index * 2 + 2)))
+                .setView(SettingsUi.dialogWrap(this, column))
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.save, (dialog, which) -> {
+                    slot.floorFrom = Math.max(1, parseInt(SettingsUi.raw(floorInput), floor[0]));
+                    slot.floorStart = start[0];
+                    slot.floorEnd = end[0];
+                    rebuildSlots();
+                });
+        if (existing) {
+            builder.setNeutralButton(R.string.slot_floor_off, (dialog, which) -> {
+                slot.floorFrom = 0;
+                slot.floorStart = null;
+                slot.floorEnd = null;
+                rebuildSlots();
+            });
+        }
+        builder.show();
+    }
+
+    private void pickFloorTime(final String[] holder, final Button target) {
+        int minutes = TimeSlots.minutes(holder[0]);
+        if (minutes < 0) {
+            minutes = 8 * 60;
+        }
+        new TimePickerDialog(this, (view, hour, minute) -> {
+            holder[0] = TimeSlots.format(hour * 60 + minute);
+            target.setText(holder[0]);
+        }, minutes / 60, minutes % 60, true).show();
+    }
+
+    private static int parseInt(String text, int fallback) {
+        try {
+            return Integer.parseInt(text.trim());
+        } catch (NumberFormatException e) {
+            return fallback;
         }
     }
 

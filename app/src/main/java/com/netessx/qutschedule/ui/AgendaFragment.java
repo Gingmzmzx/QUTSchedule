@@ -84,8 +84,7 @@ public class AgendaFragment extends Fragment {
 
             @Override
             public void onCourseLongClick(Course course) {
-                CourseActions.show(requireContext(), course,
-                        ScheduleRepository.weekOf(requireContext(), selected),
+                CourseActions.show(requireContext(), course, selected,
                         () -> ((MainActivity) requireActivity()).refreshAll());
             }
 

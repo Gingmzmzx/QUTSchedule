@@ -30,10 +30,19 @@ public class TimeScheme {
     public String toMonthDay;
     public boolean builtin;
 
-    /** 一个大节。 */
+    /**
+     * 一个大节。
+     *
+     * <p>有些教学楼的同一节课按楼层错峰上下课（黄岛校区上午三四节就是这样），
+     * {@code floorFrom} 填起始楼层后，该楼层及以上改用 {@code floorStart}/{@code floorEnd}。
+     */
     public static class Slot {
         public String start;
         public String end;
+        /** 从这一层起（含）走另一套时间；0 表示不按楼层区分。 */
+        public int floorFrom;
+        public String floorStart;
+        public String floorEnd;
 
         public Slot() {
         }
@@ -43,8 +52,46 @@ public class TimeScheme {
             this.end = end;
         }
 
+        public boolean hasFloorSplit() {
+            return floorFrom > 0;
+        }
+
+        /** 给定楼层是否走另一套时间；楼层未知（0）时一律按普通时间。 */
+        public boolean usesFloorTime(int floor) {
+            return hasFloorSplit() && floor >= floorFrom;
+        }
+
+        public String startFor(int floor) {
+            return usesFloorTime(floor) ? floorStart : start;
+        }
+
+        public String endFor(int floor) {
+            return usesFloorTime(floor) ? floorEnd : end;
+        }
+
         public Slot copy() {
-            return new Slot(start, end);
+            Slot s = new Slot(start, end);
+            s.floorFrom = floorFrom;
+            s.floorStart = floorStart;
+            s.floorEnd = floorEnd;
+            return s;
+        }
+
+        public void normalize() {
+            if (start == null || start.isEmpty()) {
+                start = TimeSlots.DEFAULT_START[0];
+            }
+            if (end == null || end.isEmpty()) {
+                end = TimeSlots.DEFAULT_END[0];
+            }
+            // 楼层时间写坏或不完整就整条撤掉，免得算出个不存在的时间
+            if (floorFrom > 0
+                    && TimeSlots.minutes(floorStart) >= 0 && TimeSlots.minutes(floorEnd) >= 0) {
+                return;
+            }
+            floorFrom = 0;
+            floorStart = null;
+            floorEnd = null;
         }
     }
 
@@ -56,6 +103,11 @@ public class TimeScheme {
         for (int i = 0; i < TimeSlots.BANDS; i++) {
             scheme.slots.add(new Slot(TimeSlots.DEFAULT_START[i], TimeSlots.DEFAULT_END[i]));
         }
+        // 黄岛校区：上午三四节 4 层及以上错峰，晚 15 分钟上下课
+        Slot morning = scheme.slots.get(1);
+        morning.floorFrom = 4;
+        morning.floorStart = "10:20";
+        morning.floorEnd = "12:10";
         return scheme;
     }
 
@@ -74,11 +126,20 @@ public class TimeScheme {
     }
 
     public String startOf(int slot) {
-        return slotAt(bandOf(slot)).start;
+        return startOf(slot, 0);
     }
 
     public String endOf(int slot) {
-        return slotAt(bandOf(slot)).end;
+        return endOf(slot, 0);
+    }
+
+    /** 给定楼层的开始时间，见 {@link Slot#usesFloorTime(int)}；楼层未知传 0。 */
+    public String startOf(int slot, int floor) {
+        return slotAt(bandOf(slot)).startFor(floor);
+    }
+
+    public String endOf(int slot, int floor) {
+        return slotAt(bandOf(slot)).endFor(floor);
     }
 
     private Slot slotAt(int band) {
@@ -116,6 +177,10 @@ public class TimeScheme {
             Slot slot = slots.get(i);
             slot.start = shift(slot.start, deltaMinutes);
             slot.end = shift(slot.end, deltaMinutes);
+            if (slot.hasFloorSplit()) {
+                slot.floorStart = shift(slot.floorStart, deltaMinutes);
+                slot.floorEnd = shift(slot.floorEnd, deltaMinutes);
+            }
         }
         return deltaMinutes;
     }
@@ -156,6 +221,41 @@ public class TimeScheme {
         }
         if (slots.isEmpty()) {
             slots.addAll(defaults().slots);
+        }
+        for (Slot slot : slots) {
+            slot.normalize();
+        }
+        upgradeLegacyTimes();
+    }
+
+    /** 老版本内置的作息（黄岛校区换作息前的那套），只用来识别「用户没动过」的节次。 */
+    private static final String[] LEGACY_START = {"08:00", "10:00", "14:00", "16:00", "19:00"};
+    private static final String[] LEGACY_END = {"09:40", "11:40", "15:40", "17:40", "20:40"};
+
+    /**
+     * 把没动过的默认节次升到当前作息，并给上午三四节补上楼层错峰。
+     *
+     * <p>只认得出还是老内置值的节次才改，用户自己调过时间的方案原样保留。
+     */
+    private void upgradeLegacyTimes() {
+        for (int i = 0; i < slots.size() && i < LEGACY_START.length; i++) {
+            Slot slot = slots.get(i);
+            if (LEGACY_START[i].equals(slot.start) && LEGACY_END[i].equals(slot.end)) {
+                slot.start = TimeSlots.DEFAULT_START[i];
+                slot.end = TimeSlots.DEFAULT_END[i];
+            }
+        }
+        if (slots.size() < 2) {
+            return;
+        }
+        // 上午三四节：1–3 层按基础时间，4 层及以上晚 15 分钟
+        Slot morning = slots.get(1);
+        if (!morning.hasFloorSplit()
+                && TimeSlots.DEFAULT_START[1].equals(morning.start)
+                && TimeSlots.DEFAULT_END[1].equals(morning.end)) {
+            morning.floorFrom = 4;
+            morning.floorStart = "10:20";
+            morning.floorEnd = "12:10";
         }
     }
 
