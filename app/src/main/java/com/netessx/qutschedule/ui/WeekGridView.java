@@ -194,7 +194,20 @@ public class WeekGridView extends View {
     }
 
     private float timeColumnWidth() {
-        return density * 34;
+        // 有楼层错峰时时间列要放下「4F+ 10:20」这种两行标注
+        return density * (hasFloorSplit() ? 42 : 34);
+    }
+
+    private boolean hasFloorSplit() {
+        if (scheme == null) {
+            return false;
+        }
+        for (TimeScheme.Slot slot : scheme.slots) {
+            if (slot != null && slot.hasFloorSplit()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int bands() {
@@ -305,13 +318,23 @@ public class WeekGridView extends View {
         paint.setColor(getContext().getColor(R.color.text_secondary));
         int bands = bands();
         float rowH = rowHeight;
+        float cx = (gridLeft - 4 * density) / 2f;
         for (int band = 0; band < bands; band++) {
             float cy = gridTop + rowH * band + 11 * density;
-            canvas.drawText(scheme == null ? "" : scheme.labelOf(band * 2 + 1),
-                    (gridLeft - 4 * density) / 2f, cy, paint);
+            canvas.drawText(scheme == null ? "" : scheme.labelOf(band * 2 + 1), cx, cy, paint);
+            boolean hasSlot = scheme != null && band < scheme.slots.size();
+            if (!hasSlot) {
+                continue;
+            }
+            TimeScheme.Slot slot = scheme.slots.get(band);
             paint.setTextSize(7.5f * density);
-            canvas.drawText(scheme == null ? "" : scheme.slots.get(band).start,
-                    (gridLeft - 4 * density) / 2f, cy + 9 * density, paint);
+            canvas.drawText(slot.start, cx, cy + 9 * density, paint);
+            if (slot.hasFloorSplit()) {
+                // 这一大节按楼层错峰，第二行补上高层那套时间
+                paint.setTextSize(6.5f * density);
+                canvas.drawText(slot.floorFrom + "F+ " + slot.floorStart,
+                        cx, cy + 18 * density, paint);
+            }
             paint.setTextSize(8.5f * density);
         }
         paint.setTextAlign(Paint.Align.LEFT);
