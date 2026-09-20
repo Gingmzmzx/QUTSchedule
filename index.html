@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QUT课表 · 青岛理工大学课表应用</title>
+<meta name="description" content="青岛理工大学学生的开源课表应用：PDF 一键导入、周次自动推算、临时调课、课程提醒、桌面小组件、备份同步。无账号、无埋点、数据只存本地。">
+<meta property="og:title" content="QUT课表 · 青岛理工大学课表应用">
+<meta property="og:description" content="PDF 一键导入，黄岛校区楼层错峰时间自动识别。开源免费，数据只存在你手机里。">
+<meta property="og:image" content="picture/week.png">
+<style>
+  :root {
+    --primary: #6750a4;
+    --primary-soft: #eaddff;
+    --on-primary: #ffffff;
+    --bg: #fffbfe;
+    --surface: #f7f2fa;
+    --card: #ffffff;
+    --text: #1c1b1f;
+    --muted: #605d66;
+    --line: #e7e0ec;
+    --radius: 20px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #d0bcff;
+      --primary-soft: #4f378b;
+      --on-primary: #381e72;
+      --bg: #141218;
+      --surface: #1c1b1f;
+      --card: #211f26;
+      --text: #e6e1e5;
+      --muted: #cac4d0;
+      --line: #49454f;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.7 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+          "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--primary); text-decoration: none; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+
+  header {
+    position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(12px);
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  header .wrap { display: flex; align-items: center; gap: 18px; height: 60px; }
+  .logo { font-weight: 700; font-size: 17px; letter-spacing: .3px; }
+  .logo span { color: var(--primary); }
+  nav { margin-left: auto; display: flex; gap: 18px; font-size: 14px; }
+  nav a { color: var(--muted); }
+  nav a:hover { color: var(--primary); }
+  @media (max-width: 720px) { nav { display: none; } }
+
+  .hero { padding: 64px 0 40px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 44px); line-height: 1.25; margin: 0 0 16px; }
+  .hero h1 em { font-style: normal; color: var(--primary); }
+  .hero p.lead { font-size: 17px; color: var(--muted); margin: 0 0 26px; max-width: 640px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .chip {
+    font-size: 13px; padding: 5px 12px; border-radius: 999px;
+    background: var(--surface); color: var(--muted); border: 1px solid var(--line);
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 24px; border-radius: 999px; font-weight: 600; font-size: 15px;
+    background: var(--primary); color: var(--on-primary); border: 1px solid transparent;
+  }
+  .btn.ghost { background: transparent; color: var(--text); border-color: var(--line); }
+  .hint { font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  section { padding: 46px 0; }
+  section h2 { font-size: 24px; margin: 0 0 6px; }
+  section .sub { color: var(--muted); margin: 0 0 26px; font-size: 15px; }
+
+  .shots { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
+  .shots figure { margin: 0; flex: 0 0 auto; text-align: center; }
+  .shots img {
+    width: 208px; border-radius: 18px; border: 1px solid var(--line);
+    background: var(--surface); display: block;
+  }
+  .shots figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px 20px 18px;
+  }
+  .card h3 { margin: 0 0 8px; font-size: 16px; }
+  .card p { margin: 0; font-size: 14px; color: var(--muted); line-height: 1.65; }
+  .card .tag {
+    display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 999px;
+    background: var(--primary-soft); color: #21005d; margin-bottom: 10px;
+  }
+  @media (prefers-color-scheme: dark) { .card .tag { color: #eaddff; } }
+
+  .highlight {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 24px; padding: 26px;
+  }
+  .highlight h3 { margin: 0 0 10px; font-size: 19px; }
+  .highlight p { color: var(--muted); margin: 0 0 14px; font-size: 14.5px; }
+  .times { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .time-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px 16px; font-size: 14.5px;
+  }
+  .time-row b { font-weight: 600; }
+  .time-row span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .time-row.accent { border-color: var(--primary); }
+
+  ol.steps { list-style: none; counter-reset: s; padding: 0; margin: 0; }
+  ol.steps li {
+    counter-increment: s; position: relative; padding-left: 46px; margin-bottom: 18px;
+    color: var(--muted); font-size: 14.5px;
+  }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--primary-soft); color: #21005d;
+    display: grid; place-items: center; font-size: 14px; font-weight: 700;
+  }
+  @media (prefers-color-scheme: dark) { ol.steps li::before { color: #eaddff; } }
+  ol.steps li b { color: var(--text); }
+
+  details { border-bottom: 1px solid var(--line); padding: 14px 0; font-size: 14.5px; }
+  details summary { cursor: pointer; font-weight: 600; }
+  details p { color: var(--muted); margin: 10px 0 0; }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; background: var(--surface); padding: 1px 6px; border-radius: 6px;
+  }
+
+  footer {
+    border-top: 1px solid var(--line); padding: 28px 0 44px;
+    color: var(--muted); font-size: 13.5px;
+  }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="logo">QUT<span>课表</span></div>
+    <nav>
+      <a href="#shots">界面</a>
+      <a href="#features">功能</a>
+      <a href="#install">安装</a>
+      <a href="#privacy">隐私</a>
+      <a href="https://github.com/Gingmzmzx/QUTSchedule">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap hero">
+  <h1>把课表从教务系统里<br><em>整个搬进手机</em></h1>
+  <p class="lead">
+    青岛理工大学学生的开源课表应用。教务系统导出的 PDF 直接导入，星期、节次、周次、
+    教师、地点一次还原；之后的提醒、待办、调休、小组件全都自动。
+    没有账号，没有广告，数据只存在你自己的手机里。
+  </p>
+  <div class="chips">
+    <span class="chip">Android 8.0+</span>
+    <span class="chip">Material You</span>
+    <span class="chip">开源 · Apache 2.0</span>
+    <span class="chip">无账号 / 无埋点</span>
+    <span class="chip">适配黄岛校区楼层错峰</span>
+  </div>
+  <div class="actions">
+    <a class="btn" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载 APK</a>
+    <a class="btn ghost" href="https://github.com/Gingmzmzx/QUTSchedule">查看源码</a>
+  </div>
+  <p class="hint">装过的直接覆盖安装即可，本地数据不会丢。</p>
+</div>
+
+<section id="shots">
+  <div class="wrap">
+    <h2>界面速览</h2>
+    <p class="sub">底部四个主页面：今日 / 课表 / 日程 / 我的，外加一个桌面小组件。</p>
+    <div class="shots">
+      <figure><img src="picture/today.png" alt="今日"><figcaption>今日</figcaption></figure>
+      <figure><img src="picture/week.png" alt="课表"><figcaption>课表</figcaption></figure>
+      <figure><img src="picture/agenda.png" alt="日程"><figcaption>日程</figcaption></figure>
+      <figure><img src="picture/mine.png" alt="我的"><figcaption>我的</figcaption></figure>
+      <figure><img src="picture/widget.png" alt="桌面小组件"><figcaption>桌面小组件</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <h2>功能</h2>
+    <p class="sub">从导入到日常使用，该有的都有。</p>
+    <div class="grid">
+
+      <div class="card">
+        <span class="tag">导入</span>
+        <h3>PDF 一键导入</h3>
+        <p>直接读教务系统导出的课表 PDF，自动还原星期、节次、周次、教师、地点、学分与考核方式。
+           导入前先预览，确认无误再落库。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">周次</span>
+        <h3>周次自动推算</h3>
+        <p>开学日期填一次，之后「今天是第几周」全自动；每门课只在它自己的周次范围内出现，
+           单双周、跳周都能解析。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">临时调整</span>
+        <h3>临时调课 / 停课</h3>
+        <p>长按一节课：<b>临时调课到…</b> 只把这节课挪到别的日期（还能顺手改节次），
+           <b>本次停课</b> 只停这一次。原课表一个字节都不动，随时一键撤销。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">加课</span>
+        <h3>长按空白格加课</h3>
+        <p>周视图上长按没有课的格子，就能在那天临时加一节课或加一条待办，
+           补课、讲座不用新建固定课程。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">放假调休</span>
+        <h3>放假与调休</h3>
+        <p>自己设定哪天放假无课（支持整段日期），以及「某天上另一天的课」。
+           应用不内置任何节假日数据，全部按学校通知填。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">提醒</span>
+        <h3>上课提醒与免打扰</h3>
+        <p>按分钟数提前提醒，每门课可单独覆盖；上课期间自动免打扰，下课自动恢复。
+           Android 16 上还能把当前课程常驻到状态栏 / 灵动岛。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">小组件</span>
+        <h3>桌面小组件</h3>
+        <p>今天 / 明天的课程概览与当日课程数，深浅色各有外观，点按直达应用；
+           每天零点自动重排提醒并刷新，不用打开 App。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">备份</span>
+        <h3>备份、迁移与同步</h3>
+        <p>JSON 整表备份换机还原；ICS 导出到系统日历自带课前提醒；
+           也可以备份到自己的 WebDAV 网盘。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">外观</span>
+        <h3>Material You</h3>
+        <p>完整 M3 配色，支持动态取色跟随系统壁纸；三套主题预设，
+           课表格子的高度、圆角、间距、不透明度都能调。</p>
+      </div>
+
+      <div class="card">
+        <span class="tag">待办</span>
+        <h3>日程与待办</h3>
+        <p>待办 / 活动 / 考试 / 作业分类，可勾选完成；整月日历加日期轴，
+           完成状态在今日页与日程页双向同步。</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="floor">
+  <div class="wrap">
+    <div class="highlight">
+      <h3>为黄岛校区适配的楼层错峰时间</h3>
+      <p>
+        上午 3–4 节按楼层错峰上下课，应用按教室号自动判断楼层
+        （A302 是 3 楼，B404 是 4 楼），提醒、状态栏和导出的日历都按各自楼层的时间走。
+        课表时间列会写成两行，一眼看出两种时间。
+      </p>
+      <div class="times">
+        <div class="time-row"><b>1–2 节</b><span>08:00 – 09:50</span></div>
+        <div class="time-row accent"><b>3–4 节 · 1–3 层</b><span>10:05 – 11:55</span></div>
+        <div class="time-row accent"><b>3–4 节 · 4 层及以上</b><span>10:20 – 12:10</span></div>
+        <div class="time-row"><b>5–6 节</b><span>14:00 – 15:50</span></div>
+        <div class="time-row"><b>7–8 节</b><span>16:10 – 18:00</span></div>
+        <div class="time-row"><b>9–10 节</b><span>19:00 – 20:50</span></div>
+      </div>
+      <p style="margin-top:14px;font-size:13.5px">
+        时间或楼层分界都能自己改：我的 → 自定义时间段 → 第 3-4 节 · 按楼层区分时间。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2>安装</h2>
+    <p class="sub">全程在手机上完成，几分钟搞定。</p>
+    <ol class="steps">
+      <li><b>下载 APK</b>：点上面的「下载 APK」到 GitHub Releases，选最新版本的
+          <code>.apk</code> 下载。首次安装需要在系统里允许「安装未知来源应用」。</li>
+      <li><b>从教务系统导出课表 PDF</b>：在浏览器里打开教务系统课表查询页，
+          显示方式切成「列表」，用「打印 → 输出 PDF」存到手机。</li>
+      <li><b>导入</b>：打开应用跟着首次引导走——设置学期、导入刚存的 PDF、确认预览，
+          之后课表就配好了。</li>
+    </ol>
+    <p class="hint">
+      应用内的首次引导第 3 步有带截图的分步说明。
+      当前解析器只适配青岛理工大学教务系统的课表版式。
+    </p>
+  </div>
+</section>
+
+<section id="privacy">
+  <div class="wrap">
+    <h2>隐私与开源</h2>
+    <p class="sub">没有账号系统，没有埋点统计，也没有广告。</p>
+    <div class="grid">
+      <div class="card">
+        <h3>数据只在你手机上</h3>
+        <p>课表、待办、个人信息全部保存在应用私有目录下的 <code>schedule.json</code>。
+           联网只发生在你主动触发的两件事：检查更新、WebDAV 备份。</p>
+      </div>
+      <div class="card">
+        <h3>权限按需申请</h3>
+        <p>通知、精确闹钟、日历、勿扰访问等权限只在用到对应功能时申请，
+           不授权也能正常看课表。</p>
+      </div>
+      <div class="card">
+        <h3>代码全部公开</h3>
+        <p>Apache License 2.0，源码托管在
+           <a href="https://github.com/Gingmzmzx/QUTSchedule">GitHub</a>，
+           欢迎 Issue 与 PR。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <h2>常见问题</h2>
+    <p class="sub"></p>
+    <details>
+      <summary>升级会丢数据吗？</summary>
+      <p>不会。直接覆盖安装即可，课表与待办都保留；换手机可以用 JSON 备份还原。</p>
+    </details>
+    <details>
+      <summary>其他学校能用吗？</summary>
+      <p>课程、提醒、小组件这些功能都能用，但 PDF 解析目前只适配青岛理工大学教务系统的版式，
+         其他学校的课表版式需要调整解析规则。</p>
+    </details>
+    <details>
+      <summary>提醒不准时怎么办？</summary>
+      <p>在系统设置里允许应用「闹钟和提醒」权限，并把这个应用加入电池优化的白名单，
+         否则部分厂商的系统可能延迟唤醒。</p>
+    </details>
+    <details>
+      <summary>为什么没有内置节假日？</summary>
+      <p>各校区、各学年安排不一样，与其猜错不如按学校通知自己填：我的 → 放假与调休。</p>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>QUT课表 · 青岛理工大学学生的开源课表应用</div>
+    <div>
+      <a href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载</a> ·
+      <a href="https://github.com/Gingmzmzx/QUTSchedule">GitHub</a> ·
+      <a href="https://github.com/Gingmzmzx/QUTSchedule/blob/main/LICENSE">Apache 2.0</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
