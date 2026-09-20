@@ -30,8 +30,8 @@ public final class UpdateChecker {
 
     private static final String TAG = "UpdateChecker";
     private static final String LATEST_JSON = "https://qutschedule.netessx.com/latest.json";
-    private static final String RELEASES_PAGE =
-            "https://github.com/Gingmzmzx/QUTSchedule/releases/latest";
+    /** 「前往下载」打开的地址：官网首页，下载与版本说明都在那。 */
+    private static final String DOWNLOAD_PAGE = "https://qutschedule.netessx.com/";
     private static final int TIMEOUT_MS = 10000;
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
@@ -46,7 +46,7 @@ public final class UpdateChecker {
         public boolean hasUpdate;
         public String currentTag = "";
         public String latestTag = "";
-        public String releaseUrl = RELEASES_PAGE;
+        public String releaseUrl = DOWNLOAD_PAGE;
         public String notes = "";
         public String error;
     }

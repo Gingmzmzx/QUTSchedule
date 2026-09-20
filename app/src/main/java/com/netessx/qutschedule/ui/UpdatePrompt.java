@@ -74,11 +74,21 @@ public final class UpdatePrompt {
     private static void showUpdate(final Activity activity, final UpdateChecker.Result result) {
         new MaterialAlertDialogBuilder(activity)
                 .setTitle(activity.getString(R.string.update_available_title, result.latestTag))
-                .setMessage(activity.getString(R.string.update_available_fmt, result.currentTag))
+                .setMessage(message(activity, result))
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.update_go, (dialog, which) ->
                         openRelease(activity, result.releaseUrl))
                 .show();
+    }
+
+    /** 正文 = 当前版本 + 接口里的更新说明；没写说明就只显示版本。 */
+    private static String message(Activity activity, UpdateChecker.Result result) {
+        String base = activity.getString(R.string.update_available_fmt, result.currentTag);
+        String notes = result.notes == null ? "" : result.notes.trim();
+        if (notes.isEmpty()) {
+            return base;
+        }
+        return base + "\n\n" + activity.getString(R.string.update_notes_title) + "\n" + notes;
     }
 
     private static void openRelease(Activity activity, String url) {

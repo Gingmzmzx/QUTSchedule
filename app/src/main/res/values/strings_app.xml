@@ -115,10 +115,11 @@
     <string name="update_latest_title">已是最新版本</string>
     <string name="update_latest_fmt">当前版本 %1$s，没有更新的版本。</string>
     <string name="update_available_title">发现新版本 %1$s</string>
-    <string name="update_available_fmt">当前版本 %1$s。是否前往 GitHub 发布页查看并下载？</string>
+    <string name="update_available_fmt">当前版本 %1$s。是否前往官网查看更新内容并下载？</string>
     <string name="update_go">前往下载</string>
+    <string name="update_notes_title">本次更新：</string>
     <string name="update_failed_title">检查更新失败</string>
-    <string name="update_failed_fmt">%1$s\n\n可以稍后再试，或直接到 GitHub 仓库查看。</string>
+    <string name="update_failed_fmt">%1$s\n\n可以稍后再试，或直接到官网 qutschedule.netessx.com 查看。</string>
     <string name="update_no_browser">没有可以打开链接的应用</string>
 
     <!-- 初次使用引导 -->
