@@ -7,7 +7,7 @@
 <meta name="description" content="青岛理工大学学生的开源课表应用：PDF 一键导入、周次自动推算、临时调课、课程提醒、桌面小组件、备份同步。无账号、无埋点、数据只存本地。">
 <meta property="og:title" content="QUT课表 · 青岛理工大学课表应用">
 <meta property="og:description" content="PDF 一键导入，黄岛校区楼层错峰时间自动识别。开源免费，数据只存在你手机里。">
-<meta property="og:image" content="picture/week.png">
+<meta property="og:image" content="/picture/week.png">
 <style>
   :root {
     --primary: #6750a4;
@@ -78,6 +78,19 @@
   }
   .btn.ghost { background: transparent; color: var(--text); border-color: var(--line); }
   .hint { font-size: 13px; color: var(--muted); margin-top: 14px; }
+
+  /* 最新版本：数据来自自建接口，取不到就整块不显示 */
+  .release {
+    margin-top: 22px; padding: 18px 20px;
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  }
+  .release-top { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+  .release-top strong { font-size: 17px; }
+  .release-notes {
+    margin: 0; font-size: 14px; color: var(--muted);
+    white-space: pre-line; line-height: 1.7;
+  }
+  .release[hidden] { display: none; }
 
   section { padding: 46px 0; }
   section h2 { font-size: 24px; margin: 0 0 6px; }
@@ -180,10 +193,18 @@
     <span class="chip">适配黄岛校区楼层错峰</span>
   </div>
   <div class="actions">
-    <a class="btn" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载 APK</a>
+    <a class="btn" id="download-top" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载 APK</a>
     <a class="btn ghost" href="https://github.com/Gingmzmzx/QUTSchedule">查看源码</a>
   </div>
   <p class="hint">装过的直接覆盖安装即可，本地数据不会丢。</p>
+
+  <div class="release" id="release" hidden>
+    <div class="release-top">
+      <strong id="release-version"></strong>
+      <span class="chip" id="release-build"></span>
+    </div>
+    <p class="release-notes" id="release-notes"></p>
+  </div>
 </div>
 
 <section id="shots">
@@ -377,12 +398,54 @@
   <div class="wrap">
     <div>QUT课表 · 青岛理工大学学生的开源课表应用</div>
     <div>
-      <a href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载</a> ·
+      <a id="download-bottom" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载</a> ·
       <a href="https://github.com/Gingmzmzx/QUTSchedule">GitHub</a> ·
       <a href="https://github.com/Gingmzmzx/QUTSchedule/blob/main/LICENSE">Apache 2.0</a>
     </div>
   </div>
 </footer>
+
+<script>
+/* 最新版本从自建接口取；取不到就保持默认的 GitHub 发布页链接，页面照常能用。
+   注意 latest.json 需要允许跨域（Access-Control-Allow-Origin），
+   本页部署在同一个域名下则不受影响。 */
+(function () {
+  var SITE = '';
+  var top = document.getElementById('download-top');
+  var bottom = document.getElementById('download-bottom');
+  var box = document.getElementById('release');
+
+  function text(id, value) {
+    var el = document.getElementById(id);
+    if (el && value) { el.textContent = value; } else if (el) { el.hidden = true; }
+  }
+
+  fetch(SITE + '/latest.json', { cache: 'no-store' })
+    .then(function (res) {
+      if (!res.ok) { throw new Error('HTTP ' + res.status); }
+      return res.json();
+    })
+    .then(function (data) {
+      var version = String(data.versionName || '').trim();
+      var build = String(data.versionCode || '').trim();
+      var notes = String(data.desc || '').trim();
+      if (!version) { throw new Error('缺少 versionName'); }
+
+      var apk = SITE + '/releases/QUTSchedule_' + version + '_build' + build + '.apk';
+      top.href = apk;
+      bottom.href = apk;
+      top.textContent = '下载 ' + version;
+
+      text('release-version', '最新版本 ' + version);
+      text('release-build', build ? 'build ' + build : '');
+      text('release-notes', notes);
+      box.hidden = false;
+    })
+    .catch(function () {
+      // 网络被墙、接口挂了都走这里：什么都不做，下载按钮仍指向 GitHub 发布页
+    });
+})();
+</script>
 
 </body>
 </html>

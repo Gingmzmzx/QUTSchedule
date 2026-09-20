@@ -206,13 +206,10 @@ public final class ScheduleRepository {
         if (course.isOneOff()) {
             LocalTime start = parseTime(course.startTime);
             LocalTime end = parseTime(course.endTime);
-            if (start == null) {
-                start = LocalTime.of(9, 0);
+            if (start != null && end != null) {
+                return new LocalTime[]{start, end};
             }
-            if (end == null) {
-                end = start.plusHours(1);
-            }
-            return new LocalTime[]{start, end};
+            // 没填具体时间的单次日程（临时加课）按节次算，落到下面用当天的作息方案
         }
         TimeScheme scheme = schemeFor(ctx, date);
         // 同一节课不同楼层可能错峰上下课，楼层从教室编号推（A302 → 3 楼），认不出按普通时间
@@ -290,13 +287,13 @@ public final class ScheduleRepository {
     public static void sort(List<Course> list, final Context ctx) {
         final LocalDate today = LocalDate.now();
         list.sort(Comparator
-                .comparingInt((Course c) -> {
-                    int minutes = c.isOneOff()
-                            ? TimeSlots.minutes(c.startTime)
-                            : TimeSlots.minutes(schemeFor(ctx, today)
-                                    .startOf(c.startSlot, RoomFloor.of(c.location)));
-                    return minutes < 0 ? 0 : minutes;
-                })
+                // 一律用算出来的起始时间排序：单次日程可能没填具体时间，只看 startTime 会被当成 0 排到最前
+                .comparingInt((Course c) -> startMinutes(ctx, c, today))
                 .thenComparing(c -> c.name == null ? "" : c.name));
+    }
+
+    private static int startMinutes(Context ctx, Course course, LocalDate date) {
+        LocalTime start = timesOf(ctx, course, date)[0];
+        return start.getHour() * 60 + start.getMinute();
     }
 }

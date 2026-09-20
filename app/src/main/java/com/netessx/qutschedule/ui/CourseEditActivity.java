@@ -60,7 +60,9 @@ public class CourseEditActivity extends BaseActivity {
     private MaterialAutoCompleteTextView startSlotSpinner;
     private MaterialAutoCompleteTextView endSlotSpinner;
     private MaterialSwitch reminderSwitch;
-    private View weeklyGroup;
+    private View dayGroup;
+    private View slotsGroup;
+    private View weeksGroup;
     private View onceGroup;
     private Button dateButton;
     private Button startTimeButton;
@@ -68,6 +70,8 @@ public class CourseEditActivity extends BaseActivity {
 
     private Course editing;
     private LocalDate onceDate = LocalDate.now();
+    /** 单次日程按节次排（临时加课），而不是让用户自己填起止时间。 */
+    private boolean slotOnceMode;
 
     public static Intent intentFor(Context ctx, Course course) {
         Intent intent = new Intent(ctx, CourseEditActivity.class);
@@ -110,8 +114,13 @@ public class CourseEditActivity extends BaseActivity {
                 editing.date = preset.toString();
                 editing.dayOfWeek = preset.getDayOfWeek().getValue();
             }
+            // 从周视图空白格进来的临时加课：按节次排，不让用户填起止时间
+            slotOnceMode = preset != null;
             findViewById(R.id.btn_delete).setVisibility(View.GONE);
         } else {
+            // 没写具体时间的单次日程就是按节次排的，重新编辑也走节次
+            slotOnceMode = editing.isOneOff()
+                    && (editing.startTime == null || editing.startTime.isEmpty());
             setPageTitle(getString(R.string.title_edit_course));
         }
         fillForm();
@@ -131,7 +140,9 @@ public class CourseEditActivity extends BaseActivity {
         startSlotSpinner = findViewById(R.id.spinner_start_slot);
         endSlotSpinner = findViewById(R.id.spinner_end_slot);
         reminderSwitch = findViewById(R.id.switch_reminder);
-        weeklyGroup = findViewById(R.id.group_weekly);
+        dayGroup = findViewById(R.id.group_day);
+        slotsGroup = findViewById(R.id.group_slots);
+        weeksGroup = findViewById(R.id.group_weeks);
         onceGroup = findViewById(R.id.group_once);
         dateButton = findViewById(R.id.btn_date);
         startTimeButton = findViewById(R.id.btn_start_time);
@@ -153,11 +164,7 @@ public class CourseEditActivity extends BaseActivity {
 
         repeatSpinner.setAdapter(simpleAdapter(Arrays.asList(
                 getString(R.string.repeat_weekly), getString(R.string.repeat_once))));
-        repeatSpinner.setOnItemClickListener((parent, view, position, id) -> {
-            boolean weekly = position == REPEAT_WEEKLY;
-            weeklyGroup.setVisibility(weekly ? View.VISIBLE : View.GONE);
-            onceGroup.setVisibility(weekly ? View.GONE : View.VISIBLE);
-        });
+        repeatSpinner.setOnItemClickListener((parent, view, position, id) -> updateGroups());
 
         daySpinner.setAdapter(simpleAdapter(Arrays.asList(DAY_NAMES)));
 
@@ -167,6 +174,23 @@ public class CourseEditActivity extends BaseActivity {
         }
         startSlotSpinner.setAdapter(simpleAdapter(slots));
         endSlotSpinner.setAdapter(simpleAdapter(slots));
+    }
+
+    /**
+     * 按「重复方式」决定显示哪些行。
+     *
+     * <p>每周重复：周几 + 节次 + 周次；单次：日期，再按需选节次（临时加课）
+     * 或自己填起止时间（考试、活动这类不在节次表里的）。
+     */
+    private void updateGroups() {
+        boolean weekly = indexOf(repeatSpinner) == REPEAT_WEEKLY;
+        boolean bySlot = weekly || slotOnceMode;
+        dayGroup.setVisibility(weekly ? View.VISIBLE : View.GONE);
+        weeksGroup.setVisibility(weekly ? View.VISIBLE : View.GONE);
+        slotsGroup.setVisibility(bySlot ? View.VISIBLE : View.GONE);
+        startTimeButton.setVisibility(bySlot ? View.GONE : View.VISIBLE);
+        endTimeButton.setVisibility(bySlot ? View.GONE : View.VISIBLE);
+        onceGroup.setVisibility(weekly ? View.GONE : View.VISIBLE);
     }
 
     /** 暴露式下拉没有「选中下标」概念，按下标取文本回填。 */
@@ -224,8 +248,6 @@ public class CourseEditActivity extends BaseActivity {
 
         boolean oneOff = editing.isOneOff();
         setChoice(repeatSpinner, oneOff ? REPEAT_ONCE : REPEAT_WEEKLY);
-        weeklyGroup.setVisibility(oneOff ? View.GONE : View.VISIBLE);
-        onceGroup.setVisibility(oneOff ? View.VISIBLE : View.GONE);
 
         int day = editing.dayOfWeek >= 1
                 ? editing.dayOfWeek
@@ -248,6 +270,7 @@ public class CourseEditActivity extends BaseActivity {
             }
         }
         updateOnceButtons();
+        updateGroups();
     }
 
     private void updateOnceButtons() {
@@ -300,11 +323,19 @@ public class CourseEditActivity extends BaseActivity {
 
         if (oneOff) {
             course.date = onceDate.toString();
-            course.startTime = onceStart;
-            course.endTime = onceEnd;
             course.dayOfWeek = onceDate.getDayOfWeek().getValue();
             course.weeks = new ArrayList<>();
             course.weekSpec = "";
+            if (slotOnceMode) {
+                // 按节次排：时间交给当天生效的作息方案算，起止时间留空
+                course.startSlot = indexOf(startSlotSpinner) + 1;
+                course.endSlot = Math.max(course.startSlot, indexOf(endSlotSpinner) + 1);
+                course.startTime = null;
+                course.endTime = null;
+            } else {
+                course.startTime = onceStart;
+                course.endTime = onceEnd;
+            }
         } else {
             course.date = null;
             course.startTime = null;

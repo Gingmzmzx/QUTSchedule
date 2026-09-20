@@ -19,18 +19,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 检查更新：读 GitHub 的最新 release 标签，和本机版本比大小。
+ * 检查更新：读自建接口 {@code latest.json} 里的最新版本，和本机比大小。
  *
- * <p>只比较标签里的语义化版本号（{@code v1.2.0}），不比 versionCode —— 后者带日期和构建序号，
- * release 标签里不会有。
+ * <p>接口是一份静态 JSON，形如
+ * {@code {"versionName":"v1.3.1","versionCode":"26092002","desc":"修复了…"}}。
+ * 先比 {@code versionCode}（带日期与构建序号，最可靠），拿不到再退回比语义化版本号。
+ * 用自建接口而不是 GitHub API，是因为后者在国内经常连不上。
  */
 public final class UpdateChecker {
 
     private static final String TAG = "UpdateChecker";
-    private static final String LATEST_RELEASE =
-            "https://api.github.com/repos/Gingmzmzx/QUTSchedule/releases/latest";
+    private static final String LATEST_JSON = "https://qutschedule.netessx.com/latest.json";
     private static final String RELEASES_PAGE =
-            "https://github.com/Gingmzmzx/QUTSchedule/releases";
+            "https://github.com/Gingmzmzx/QUTSchedule/releases/latest";
     private static final int TIMEOUT_MS = 10000;
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
@@ -68,21 +69,15 @@ public final class UpdateChecker {
         result.currentTag = currentVersionName(ctx);
         HttpURLConnection conn = null;
         try {
-            conn = (HttpURLConnection) new URL(LATEST_RELEASE).openConnection();
+            conn = (HttpURLConnection) new URL(LATEST_JSON).openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(TIMEOUT_MS);
             conn.setReadTimeout(TIMEOUT_MS);
-            conn.setRequestProperty("Accept", "application/vnd.github+json");
-            // GitHub 要求带 User-Agent，否则直接 403
+            conn.setRequestProperty("Accept", "application/json");
+            // 带上 UA，免得被中间的 CDN / 防火墙当成脚本请求拦掉
             conn.setRequestProperty("User-Agent", "QUTSchedule-Android");
 
             int code = conn.getResponseCode();
-            if (code == 404) {
-                // 仓库还没发布任何 release，视为已是最新
-                result.ok = true;
-                result.latestTag = result.currentTag;
-                return result;
-            }
             if (code < 200 || code >= 300) {
                 result.error = "服务器返回 " + code;
                 return result;
@@ -90,15 +85,10 @@ public final class UpdateChecker {
 
             String body = readAll(conn.getInputStream());
             JsonObject json = JsonParser.parseString(body).getAsJsonObject();
-            result.latestTag = optString(json, "tag_name");
-            String url = optString(json, "html_url");
-            if (!url.isEmpty()) {
-                result.releaseUrl = url;
-            }
-            result.notes = optString(json, "body");
+            result.latestTag = optString(json, "versionName");
+            result.notes = optString(json, "desc");
             result.ok = true;
-            result.hasUpdate = !result.latestTag.isEmpty()
-                    && compareVersions(result.latestTag, result.currentTag) > 0;
+            result.hasUpdate = isNewer(ctx, optString(json, "versionCode"), result.latestTag);
             return result;
         } catch (Exception e) {
             Log.w(TAG, "检查更新失败", e);
@@ -125,6 +115,43 @@ public final class UpdateChecker {
 
     private static String optString(JsonObject json, String key) {
         return json.has(key) && !json.get(key).isJsonNull() ? json.get(key).getAsString() : "";
+    }
+
+    /**
+     * 有没有新版本：能拿到两边 versionCode 时以它为准，否则退回比语义化版本号。
+     *
+     * <p>版本号写错只会让人错过更新，versionCode 比错却会让人装到更旧的包，所以宁可退回版本号比。
+     */
+    private static boolean isNewer(Context ctx, String remoteCode, String remoteTag) {
+        long remote = parseLong(remoteCode);
+        long local = currentVersionCode(ctx);
+        if (remote > 0 && local > 0) {
+            return remote > local;
+        }
+        return !remoteTag.isEmpty() && compareVersions(remoteTag, currentVersionName(ctx)) > 0;
+    }
+
+    private static long parseLong(String text) {
+        if (text == null || text.isEmpty()) {
+            return -1;
+        }
+        try {
+            return Long.parseLong(text.trim());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** versionCode 在 API 28 起是 long，低版本只能读已废弃的 int 字段。 */
+    public static long currentVersionCode(Context ctx) {
+        try {
+            PackageInfo info = ctx.getPackageManager().getPackageInfo(ctx.getPackageName(), 0);
+            return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P
+                    ? info.getLongVersionCode()
+                    : info.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            return -1;
+        }
     }
 
     public static String currentVersionName(Context ctx) {
