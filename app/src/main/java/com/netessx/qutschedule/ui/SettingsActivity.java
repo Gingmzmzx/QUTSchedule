@@ -37,14 +37,12 @@ public class SettingsActivity extends BaseActivity {
         LocalDate today = LocalDate.now();
 
         SettingsUi.section(this, column, getString(R.string.mine_semester));
-        column.addView(SettingsUi.label(this, getString(R.string.settings_term_name)));
         nameInput = SettingsUi.textRow(this, getString(R.string.settings_term_name), semester.name);
         column.addView(nameInput);
 
         column.addView(SettingsUi.label(this, getString(R.string.settings_term_start)));
         column.addView(SettingsUi.buttonRow(this, termStartText(), v -> pickStartDate()));
 
-        column.addView(SettingsUi.label(this, getString(R.string.settings_total_weeks)));
         weeksInput = SettingsUi.numberRow(this, getString(R.string.settings_total_weeks),
                 String.valueOf(semester.totalWeeks));
         column.addView(weeksInput);

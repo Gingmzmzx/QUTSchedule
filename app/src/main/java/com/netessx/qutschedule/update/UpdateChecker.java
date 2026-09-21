@@ -84,7 +84,9 @@ public final class UpdateChecker {
             }
 
             String body = readAll(conn.getInputStream());
-            JsonObject json = JsonParser.parseString(body).getAsJsonObject();
+            // 服务端是手写 JSON，尾逗号这类小毛病不该让检查更新直接失败
+            JsonObject json = JsonParser.parseString(body.replaceAll(",\\s*([}\\]])", "$1"))
+                    .getAsJsonObject();
             result.latestTag = optString(json, "versionName");
             result.notes = optString(json, "desc");
             result.ok = true;
@@ -101,7 +103,8 @@ public final class UpdateChecker {
         }
     }
 
-    private static String readAll(InputStream in) throws Exception {
+    /** 读完整个响应体；公告那边也用这个方法。 */
+    static String readAll(InputStream in) throws Exception {
         try (InputStream stream = in) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             byte[] buffer = new byte[4096];

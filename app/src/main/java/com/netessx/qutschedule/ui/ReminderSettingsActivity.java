@@ -2,6 +2,7 @@ package com.netessx.qutschedule.ui;
 
 import android.os.Bundle;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -33,7 +34,7 @@ public class ReminderSettingsActivity extends BaseActivity {
         LinearLayout basic = SettingsUi.card(this, column);
         basic.addView(SettingsUi.switchRow(this, getString(R.string.settings_reminder),
                 prefs.reminderEnabled, (button, checked) -> prefs.reminderEnabled = checked));
-        basic.addView(SettingsUi.label(this, getString(R.string.reminder_lead)));
+        // 输入框自带的 hint 就是标题，不用再加一行 label
         leadInput = SettingsUi.numberRow(this, getString(R.string.reminder_lead),
                 String.valueOf(prefs.defaultReminderMinutes));
         basic.addView(leadInput);
@@ -79,5 +80,7 @@ public class ReminderSettingsActivity extends BaseActivity {
         ScheduleStore.get(this).save();
         ReminderScheduler.sync(this);
         LiveUpdateService.refresh(this);
+        // 只对「触发时刻还没到」的课生效，不说清楚用户会以为设置没保存上
+        Toast.makeText(this, R.string.reminder_lead_saved, Toast.LENGTH_SHORT).show();
     }
 }

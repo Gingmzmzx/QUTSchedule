@@ -52,6 +52,8 @@ public class Prefs {
     public boolean onboarded;
     /** 每次启动是否自动检查更新。 */
     public boolean autoCheckUpdate = true;
+    /** 已经展示过的最大公告 id；0 表示还没展示过任何公告。 */
+    public int lastNoticeId;
 
     public boolean darkOn(boolean systemDark) {
         if (MODE_LIGHT.equals(themeMode)) {
@@ -83,6 +85,9 @@ public class Prefs {
         }
         if (weekStartDay < 1 || weekStartDay > 7) {
             weekStartDay = 1;
+        }
+        if (lastNoticeId < 0) {
+            lastNoticeId = 0;
         }
     }
 
@@ -127,6 +132,7 @@ public class Prefs {
         p.holidayAware = holidayAware;
         p.onboarded = onboarded;
         p.autoCheckUpdate = autoCheckUpdate;
+        p.lastNoticeId = lastNoticeId;
         p.holidayAware = holidayAware;
         return p;
     }

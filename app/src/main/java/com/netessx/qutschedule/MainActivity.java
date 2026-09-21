@@ -61,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 上次闪退过就先看崩溃界面：崩溃当场弹窗常被系统拦掉，这里是唯一能保证看到日志的地方
+        if (com.netessx.qutschedule.util.CrashLog.hasPending(this)) {
+            startActivity(new Intent(this, com.netessx.qutschedule.ui.CrashActivity.class));
+            finish();
+            return;
+        }
         // 首次启动先进引导：不设内容视图就直接跳走，避免主界面闪一下
         if (!ScheduleStore.get(this).data().prefs.onboarded) {
             startActivity(com.netessx.qutschedule.ui.OnboardingActivity.newIntent(this));
@@ -69,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
         }
         setContentView(R.layout.activity_main);
         // edge-to-edge 强制开启，底部导航条与状态栏要让出高度
-        com.netessx.qutschedule.ui.Insets.applySystemBars(findViewById(R.id.root_container));
+        com.netessx.qutschedule.ui.Insets.applySystemBars(this,
+                findViewById(R.id.root_container));
 
         todayFragment = TodayFragment.newInstance();
         weekFragment = WeekFragment.newInstance();
@@ -102,6 +109,8 @@ public class MainActivity extends AppCompatActivity {
         requestNotificationPermission();
         // 每次启动都查，只在新版本存在时才弹提示，失败静默忽略
         com.netessx.qutschedule.ui.UpdatePrompt.checkSilently(this);
+        // 顺带拉一次公告，只有没看过的 id 才会弹
+        com.netessx.qutschedule.ui.NoticePrompt.check(this);
     }
 
     @Override

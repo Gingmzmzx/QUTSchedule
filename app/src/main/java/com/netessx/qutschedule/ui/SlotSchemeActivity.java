@@ -69,7 +69,6 @@ public class SlotSchemeActivity extends BaseActivity {
                 v -> removeScheme()), weight());
         column.addView(schemeButtons);
 
-        column.addView(SettingsUi.label(this, getString(R.string.slot_name)));
         nameInput = SettingsUi.textRow(this, getString(R.string.slot_name), scheme.name);
         column.addView(nameInput);
 

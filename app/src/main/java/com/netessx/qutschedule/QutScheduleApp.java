@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.color.DynamicColors;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.Prefs;
+import com.netessx.qutschedule.util.CrashLog;
 import com.netessx.qutschedule.widget.ScheduleWidgetProvider;
 
 /**
@@ -21,11 +22,17 @@ public class QutScheduleApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        Prefs prefs = ScheduleStore.get(this).data().prefs;
-        AppCompatDelegate.setDefaultNightMode(nightModeOf(prefs.themeMode));
-        if (prefs.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            // Material You：Android 12 起按系统壁纸生成配色
-            DynamicColors.applyToActivitiesIfAvailable(this);
+        CrashLog.install(this);
+        try {
+            Prefs prefs = ScheduleStore.get(this).data().prefs;
+            AppCompatDelegate.setDefaultNightMode(nightModeOf(prefs.themeMode));
+            if (prefs.dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // Material You：Android 12 起按系统壁纸生成配色
+                DynamicColors.applyToActivitiesIfAvailable(this);
+            }
+        } catch (Throwable t) {
+            // 这里失败不该让整个进程起不来，否则每次启动都崩，连崩溃界面都进不去
+            android.util.Log.w("QutScheduleApp", "初始化主题失败", t);
         }
     }
 

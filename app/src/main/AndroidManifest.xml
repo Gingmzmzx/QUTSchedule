@@ -122,6 +122,14 @@
             android:label="@string/mine_about"
             android:parentActivityName=".MainActivity" />
 
+        <!-- 闪退后由闹钟拉起，不进入最近任务列表 -->
+        <activity
+            android:name=".ui.CrashActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:label="@string/crash_title"
+            android:launchMode="singleTop" />
+
         <receiver
             android:name=".reminder.ReminderReceiver"
             android:exported="false" />

@@ -89,15 +89,15 @@ public class BackupActivity extends BaseActivity {
 
         SettingsUi.section(this, column, getString(R.string.backup_webdav));
         WebDavClient.Config config = WebDavClient.load(this);
-        column.addView(SettingsUi.label(this, getString(R.string.backup_webdav_url)));
-        urlInput = SettingsUi.textRow(this, "https://example.com/dav/", config.url);
+        // hint 用字段名（它会浮在输入框上当作标题），示例地址挪到下面当说明
+        urlInput = SettingsUi.textRow(this, getString(R.string.backup_webdav_url), config.url);
         column.addView(urlInput);
-        column.addView(SettingsUi.label(this, getString(R.string.backup_webdav_user)));
-        userInput = SettingsUi.textRow(this, "", config.user);
+        userInput = SettingsUi.textRow(this, getString(R.string.backup_webdav_user), config.user);
         column.addView(userInput);
-        column.addView(SettingsUi.label(this, getString(R.string.backup_webdav_password)));
-        passwordInput = SettingsUi.textRow(this, "", config.password);
+        passwordInput = SettingsUi.textRow(this, getString(R.string.backup_webdav_password),
+                config.password);
         column.addView(passwordInput);
+        column.addView(SettingsUi.label(this, getString(R.string.backup_webdav_url_hint)));
         column.addView(SettingsUi.buttonRow(this, getString(R.string.backup_upload),
                 v -> runWebDav(true)));
         column.addView(SettingsUi.buttonRow(this, getString(R.string.backup_download),

@@ -12,9 +12,9 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.ServiceCompat;
 import androidx.core.content.ContextCompat;
@@ -37,15 +37,16 @@ import java.util.Collections;
 /**
  * 状态栏 / 灵动岛上的「当前课程」。
  *
- * <p>Android 16（API 36）起用 {@code Notification.ProgressStyle} 加
- * {@code setRequestPromotedOngoing(true)} 申请常驻进度通知，系统会把它提升到状态栏胶囊区域，
- * 也就是各家 ROM 说的「灵动岛」。低版本退化为带进度条的常驻通知。
+ * <p>做法是把这节课包装成一个媒体会话（见 {@link ClassMediaSession}），通知用
+ * {@code MediaStyle}：系统的灵动岛、锁屏、状态栏媒体卡片认的都是这个，标题、副标题和进度条
+ * 都能直接显示，不用逐个适配厂商的私有接口。
  *
  * <p>前台服务只在有课进行中时运行，下课后自行停止；即使服务没能起来（例如从后台广播触发被系统
  * 拒绝），前面 post 的通知仍然会显示。
  */
 public class LiveUpdateService extends Service {
 
+    private static final String TAG = "LiveUpdateService";
     private static final String CHANNEL_LIVE = "class_live";
     private static final int NOTIFICATION_ID = 2001;
     private static final long TICK_MS = 30_000L;
@@ -58,7 +59,14 @@ public class LiveUpdateService extends Service {
     private final Runnable ticker = new Runnable() {
         @Override
         public void run() {
-            if (!updateNow()) {
+            boolean keepGoing;
+            try {
+                keepGoing = updateNow();
+            } catch (Throwable t) {
+                Log.w(TAG, "刷新状态栏失败", t);
+                keepGoing = false;
+            }
+            if (!keepGoing) {
                 stopSelf();
                 return;
             }
@@ -68,9 +76,19 @@ public class LiveUpdateService extends Service {
 
     /** 按当前时间重算状态栏内容，必要时启停前台服务。 */
     public static void refresh(Context context) {
+        try {
+            refreshInner(context);
+        } catch (Throwable t) {
+            // 这个方法会被广播（开机、闹钟）直接调用，漏出去的异常会让整个应用闪退
+            Log.w(TAG, "刷新状态栏失败", t);
+        }
+    }
+
+    private static void refreshInner(Context context) {
         Context app = context.getApplicationContext();
         if (!ScheduleStore.get(app).data().prefs.liveUpdateEnabled) {
             cancel(app);
+            ClassMediaSession.stop();
             app.stopService(new Intent(app, LiveUpdateService.class));
             return;
         }
@@ -79,27 +97,57 @@ public class LiveUpdateService extends Service {
         if (!inTimeWindow(app, now)) {
             // 只在当天第一节课前到最后一节课后之间常驻，其余时间零占用
             cancel(app);
+            ClassMediaSession.stop();
             app.stopService(new Intent(app, LiveUpdateService.class));
             return;
         }
         Course current = ScheduleRepository.currentCourse(app, now);
         if (current != null) {
             post(app, build(app, current, now));
-            try {
-                ContextCompat.startForegroundService(app, new Intent(app, LiveUpdateService.class));
-            } catch (RuntimeException ignored) {
-                // 后台启动前台服务受限，通知已经发出即可
+            if (isForeground(app)) {
+                try {
+                    ContextCompat.startForegroundService(app,
+                            new Intent(app, LiveUpdateService.class));
+                } catch (RuntimeException ignored) {
+                    // 通知已经发出，服务起不来不影响
+                }
             }
+            // 不在前台就不起前台服务：Android 12 起后台启动会抛
+            // ForegroundServiceStartNotAllowedException，且在 Service 里没人接得住，直接闪退
             return;
         }
 
         Course next = ScheduleRepository.nextCourse(app, now);
         if (next != null && minutesUntil(app, next, now) <= UPCOMING_MINUTES) {
-            post(app, build(app, next, now));
+            // 还没上课：只在推送里预告，不进媒体卡片
+            post(app, build(app, next, now, false));
         } else {
             cancel(app);
+            ClassMediaSession.stop();
         }
         app.stopService(new Intent(app, LiveUpdateService.class));
+    }
+
+    /** 应用是否在前台；只有前台才允许启动前台服务。 */
+    private static boolean isForeground(Context ctx) {
+        android.app.ActivityManager manager =
+                (android.app.ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager == null) {
+            return false;
+        }
+        java.util.List<android.app.ActivityManager.RunningAppProcessInfo> processes =
+                manager.getRunningAppProcesses();
+        if (processes == null) {
+            return false;
+        }
+        String pkg = ctx.getPackageName();
+        for (android.app.ActivityManager.RunningAppProcessInfo process : processes) {
+            if (pkg.equals(process.processName)) {
+                return process.importance
+                        <= android.app.ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND;
+            }
+        }
+        return false;
     }
 
     /** 当天第一节课前 {@link #UPCOMING_MINUTES} 分钟到最后一节课结束之间才常驻。 */
@@ -132,7 +180,15 @@ public class LiveUpdateService extends Service {
         NotificationManagerCompat.from(ctx).cancel(NOTIFICATION_ID);
     }
 
+    /** 上课中的那条：走媒体会话，系统会把它显示成媒体卡片 / 灵动岛。 */
     private static Notification build(Context ctx, Course course, LocalDateTime now) {
+        return build(ctx, course, now, true);
+    }
+
+    /**
+     * @param media 是否挂到媒体会话上。上课前的预告不用挂 —— 那会让系统以为已经开始播放了。
+     */
+    private static Notification build(Context ctx, Course course, LocalDateTime now, boolean media) {
         LocalTime[] times = ScheduleRepository.timesOf(ctx, course);
         int startMinutes = times[0].getHour() * 60 + times[0].getMinute();
         int endMinutes = times[1].getHour() * 60 + times[1].getMinute();
@@ -164,44 +220,31 @@ public class LiveUpdateService extends Service {
                 new Intent(ctx, MainActivity.class), flags);
 
         int color = ColorPalette.colorOf(ctx, course);
-        if (Build.VERSION.SDK_INT >= 36) {
-            // 平台样式无法交给 NotificationCompat，API 36 上直接用平台 Builder
-            return new Notification.Builder(ctx, CHANNEL_LIVE)
-                    .setSmallIcon(R.drawable.ic_day)
-                    .setContentTitle(title)
-                    .setContentText(text.toString())
-                    .setContentIntent(content)
-                    .setOngoing(true)
-                    .setOnlyAlertOnce(true)
-                    .setShowWhen(false)
-                    .setColor(color)
-                    .setStyle(progressStyle(total, percent, color))
-                    .setRequestPromotedOngoing(true)
-                    .setShortCriticalText(remainingText)
-                    .build();
-        }
-        return new NotificationCompat.Builder(ctx, CHANNEL_LIVE)
+
+        Notification.Builder builder = new Notification.Builder(ctx, CHANNEL_LIVE)
                 .setSmallIcon(R.drawable.ic_day)
                 .setContentTitle(title)
                 .setContentText(text.toString())
                 .setContentIntent(content)
                 .setOngoing(true)
-                .setSilent(true)
                 .setOnlyAlertOnce(true)
                 .setShowWhen(false)
                 .setColor(color)
-                .setProgress(100, percent, false)
-                .build();
-    }
+                .setVisibility(Notification.VISIBILITY_PUBLIC);
 
-    /** Android 16 的进度通知样式，用于常驻胶囊 / 灵动岛。 */
-    private static Notification.Style progressStyle(int total, int percent, int color) {
-        Notification.ProgressStyle style = new Notification.ProgressStyle()
-                .setStyledByProgress(false)
-                .setProgress(percent);
-        style.setProgressSegments(Collections.singletonList(
-                new Notification.ProgressStyle.Segment(total).setColor(color)));
-        return style;
+        if (media) {
+            // 把进度喂给媒体会话：系统据此渲染锁屏 / 状态栏卡片与灵动岛，
+            // 速度给 1.0，两次刷新之间进度条由系统自己往前走
+            long durationMs = Math.max(1, total) * 60_000L;
+            long positionMs = Math.min(durationMs,
+                    Math.max(0, nowMinutes - startMinutes) * 60_000L);
+            ClassMediaSession.update(ctx, course.name, text.toString(), positionMs, durationMs);
+            builder.setStyle(new Notification.MediaStyle()
+                    .setMediaSession(ClassMediaSession.token(ctx)));
+        } else {
+            builder.setStyle(new Notification.BigTextStyle().bigText(text.toString()));
+        }
+        return builder.build();
     }
 
     private static void ensureChannel(Context ctx) {
@@ -223,13 +266,21 @@ public class LiveUpdateService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         LocalDateTime now = LocalDateTime.now();
-        Course course = ScheduleRepository.currentCourse(this, now);
-        if (course == null) {
+        try {
+            Course course = ScheduleRepository.currentCourse(this, now);
+            if (course == null) {
+                stopSelf();
+                return START_NOT_STICKY;
+            }
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, build(this, course, now),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+        } catch (Throwable t) {
+            // 后台启动受限、通知被禁、厂商 ROM 拦截，都会在这里抛异常。
+            // 它发生在 Service 里，没人接住就是整个应用闪退，所以必须自己兜住。
+            Log.w(TAG, "状态栏常驻启动失败", t);
             stopSelf();
             return START_NOT_STICKY;
         }
-        ServiceCompat.startForeground(this, NOTIFICATION_ID, build(this, course, now),
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
         handler.removeCallbacks(ticker);
         handler.postDelayed(ticker, TICK_MS);
         return START_STICKY;
@@ -253,6 +304,13 @@ public class LiveUpdateService extends Service {
     public void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(ticker);
+    }
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        // 用户从最近任务里划掉应用：会话留着会变成一条没人管的媒体卡片
+        ClassMediaSession.stop();
     }
 
     @Nullable

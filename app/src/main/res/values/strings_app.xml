@@ -106,6 +106,22 @@
     <string name="mine_backup_summary">JSON 完整备份、ICS 日历导出、写入系统日历、WebDAV 云备份</string>
     <string name="about_version_fmt">%1$s (%2$s)</string>
     <string name="about_replay_onboarding">重新查看使用引导</string>
+    <string name="about_crash_log">导出崩溃日志</string>
+    <string name="about_crash_log_hint">上次闪退时的堆栈记录，只存在你的手机里。分享给开发者可以帮助定位问题。</string>
+    <string name="about_crash_log_share">分享</string>
+    <string name="about_crash_log_clear">删除</string>
+    <string name="about_crash_log_none">没有崩溃记录</string>
+
+    <!-- 崩溃界面 -->
+    <string name="crash_title">应用遇到问题</string>
+    <string name="crash_hint">可以先把日志发给开发者，也可以重启试试。如果重启后仍然闪退，清除数据能恢复使用（课表、待办会被删掉，请谨慎）。</string>
+    <string name="crash_export">导出日志</string>
+    <string name="crash_restart">重启软件</string>
+    <string name="crash_clear">清除数据</string>
+    <string name="crash_clear_confirm">会删除本机上的课表、待办与所有设置，且无法恢复。确定继续吗？</string>
+    <string name="crash_clear_failed">清除数据失败，请到系统设置里清除应用数据</string>
+    <string name="crash_close">关闭</string>
+    <string name="crash_log_empty">没有记录到崩溃信息</string>
     <string name="image_preview_hint">双指捏合可放大图片 · 双击快速缩放 · 单击返回</string>
 
     <!-- 检查更新 -->
@@ -118,6 +134,11 @@
     <string name="update_available_fmt">当前版本 %1$s。是否前往官网查看更新内容并下载？</string>
     <string name="update_go">前往下载</string>
     <string name="update_notes_title">本次更新：</string>
+
+    <!-- 服务端公告 -->
+    <string name="notice_title">公告</string>
+    <string name="notice_time_fmt">公告发布于 %1$s</string>
+    <string name="notice_ok">知道了</string>
     <string name="update_failed_title">检查更新失败</string>
     <string name="update_failed_fmt">%1$s\n\n可以稍后再试，或直接到官网 qutschedule.netessx.com 查看。</string>
     <string name="update_no_browser">没有可以打开链接的应用</string>
@@ -249,6 +270,7 @@
 
     <!-- 提醒设置 -->
     <string name="reminder_lead">默认提前提醒（分钟）</string>
+    <string name="reminder_lead_saved">已保存。对还没到提醒时间的课生效，提醒时间已过的今天不会再补</string>
     <string name="reminder_dnd">上课期间免打扰</string>
     <string name="reminder_dnd_mode">免打扰方式</string>
     <string name="reminder_dnd_silent">仅静音</string>
@@ -268,6 +290,7 @@
     <string name="backup_calendar_hint">把当前课表添加到系统日历账号</string>
     <string name="backup_webdav">WebDAV 云备份</string>
     <string name="backup_webdav_url">服务器地址</string>
+    <string name="backup_webdav_url_hint">例如 https://example.com/dav/，需要是可写 WebDAV 目录</string>
     <string name="backup_webdav_user">用户名</string>
     <string name="backup_webdav_password">密码</string>
     <string name="backup_upload">上传备份</string>

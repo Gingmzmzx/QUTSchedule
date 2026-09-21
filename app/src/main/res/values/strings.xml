@@ -37,7 +37,7 @@
     <string name="field_start_time">开始时间</string>
     <string name="field_end_time">结束时间</string>
     <string name="field_reminder">上课提醒</string>
-    <string name="field_reminder_lead">提前分钟</string>
+    <string name="field_reminder_lead">提前分钟（-1 跟随默认）</string>
     <string name="repeat_weekly">每周重复</string>
     <string name="repeat_once">单次日程</string>
     <string name="save">保存</string>

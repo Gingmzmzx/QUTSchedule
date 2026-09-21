@@ -319,7 +319,14 @@ public class CourseEditActivity extends BaseActivity {
         course.note = noteInput.getText().toString().trim();
         course.type = CourseType.ALL[indexOf(typeSpinner)];
         course.reminderEnabled = reminderSwitch.isChecked();
-        course.reminderLeadMinutes = parseInt(leadInput.getText().toString(), -1);
+        // 输入框打开时填的就是默认值，用户没动过就继续存 -1（跟随默认）；
+        // 否则这门课会被固化在当时的默认值上，之后改默认值对它就不生效了
+        int lead = parseInt(leadInput.getText().toString(), -1);
+        int fallback = ScheduleStore.get(this).data().prefs.defaultReminderMinutes;
+        if (lead == fallback && editing.reminderLeadMinutes < 0) {
+            lead = -1;
+        }
+        course.reminderLeadMinutes = lead;
 
         if (oneOff) {
             course.date = onceDate.toString();

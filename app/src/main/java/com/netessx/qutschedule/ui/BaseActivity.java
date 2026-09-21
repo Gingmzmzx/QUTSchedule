@@ -41,6 +41,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         // edge-to-edge 是强制开启的，自己把系统栏高度让出来
         Insets.applySystemBars(root);
         super.setContentView(root);
+        // 图标明暗必须等 decor view 建好之后再设，早于 setContentView 会 NPE
+        Insets.applyBarAppearance(this);
         setSupportActionBar(toolbar);
         toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_ab_back_material);
         toolbar.setNavigationOnClickListener(v -> finish());

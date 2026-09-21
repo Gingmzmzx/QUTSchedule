@@ -110,7 +110,7 @@ public class OnboardingActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_onboarding);
-        Insets.applySystemBars(findViewById(R.id.root));
+        Insets.applySystemBars(this, findViewById(R.id.root));
 
         data = ScheduleStore.get(this).data();
         prefs = data.prefs;
@@ -240,7 +240,6 @@ public class OnboardingActivity extends AppCompatActivity {
         LinearLayout column = pageColumn();
         heading(column, R.string.onboarding_semester_title, R.string.onboarding_semester_body);
 
-        column.addView(SettingsUi.label(this, getString(R.string.onboarding_semester_name)));
         nameInput = SettingsUi.textRow(this, getString(R.string.settings_term_name), semester.name);
         column.addView(nameInput);
 
@@ -248,7 +247,6 @@ public class OnboardingActivity extends AppCompatActivity {
         startButton = SettingsUi.buttonRow(this, termStartText(), v -> pickStartDate());
         column.addView(startButton);
 
-        column.addView(SettingsUi.label(this, getString(R.string.onboarding_semester_weeks)));
         weeksInput = SettingsUi.numberRow(this, getString(R.string.onboarding_semester_weeks),
                 String.valueOf(semester.totalWeeks));
         column.addView(weeksInput);
@@ -386,25 +384,20 @@ public class OnboardingActivity extends AppCompatActivity {
         LinearLayout column = pageColumn();
         heading(column, R.string.onboarding_profile_title, R.string.onboarding_profile_body);
 
-        column.addView(SettingsUi.label(this, getString(R.string.profile_nickname)));
         nicknameInput = SettingsUi.textRow(this, getString(R.string.profile_nickname),
                 profile.nickname);
         column.addView(nicknameInput);
 
-        column.addView(SettingsUi.label(this, getString(R.string.profile_school)));
         schoolInput = SettingsUi.textRow(this, getString(R.string.profile_school), profile.school);
         column.addView(schoolInput);
 
-        column.addView(SettingsUi.label(this, getString(R.string.profile_college)));
         collegeInput = SettingsUi.textRow(this, getString(R.string.profile_college),
                 profile.college);
         column.addView(collegeInput);
 
-        column.addView(SettingsUi.label(this, getString(R.string.profile_major)));
         majorInput = SettingsUi.textRow(this, getString(R.string.profile_major), profile.major);
         column.addView(majorInput);
 
-        column.addView(SettingsUi.label(this, getString(R.string.profile_grade)));
         gradeInput = SettingsUi.textRow(this, getString(R.string.profile_grade), profile.grade);
         column.addView(gradeInput);
         return scrollHost(column);
