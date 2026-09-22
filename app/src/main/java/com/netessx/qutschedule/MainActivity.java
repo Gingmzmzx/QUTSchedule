@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_SCHEDULE = "schedule";
     private static final String TAG_AGENDA = "agenda";
     private static final String TAG_MINE = "mine";
+    /** 重建后恢复选中的页签。 */
+    private static final String KEY_TAB = "tab";
 
     private TodayFragment todayFragment;
     private WeekFragment weekFragment;
@@ -78,20 +80,31 @@ public class MainActivity extends AppCompatActivity {
         com.netessx.qutschedule.ui.Insets.applySystemBars(this,
                 findViewById(R.id.root_container));
 
-        todayFragment = TodayFragment.newInstance();
-        weekFragment = WeekFragment.newInstance();
-        agendaFragment = AgendaFragment.newInstance();
-        mineFragment = MineFragment.newInstance();
-
         FragmentManager fm = getSupportFragmentManager();
-        fm.beginTransaction()
-                .add(R.id.fragment_container, mineFragment, TAG_MINE).hide(mineFragment)
-                .add(R.id.fragment_container, agendaFragment, TAG_AGENDA).hide(agendaFragment)
-                .add(R.id.fragment_container, weekFragment, TAG_SCHEDULE).hide(weekFragment)
-                .add(R.id.fragment_container, todayFragment, TAG_TODAY)
-                .commit();
+        if (savedInstanceState == null) {
+            todayFragment = TodayFragment.newInstance();
+            weekFragment = WeekFragment.newInstance();
+            agendaFragment = AgendaFragment.newInstance();
+            mineFragment = MineFragment.newInstance();
+            fm.beginTransaction()
+                    .add(R.id.fragment_container, mineFragment, TAG_MINE).hide(mineFragment)
+                    .add(R.id.fragment_container, agendaFragment, TAG_AGENDA).hide(agendaFragment)
+                    .add(R.id.fragment_container, weekFragment, TAG_SCHEDULE).hide(weekFragment)
+                    .add(R.id.fragment_container, todayFragment, TAG_TODAY)
+                    .commit();
+        } else {
+            // 旋转屏幕、进程重建时 FragmentManager 已经把四个 Fragment 恢复了。
+            // 这里必须把它们取回来用；再 add 一次就会叠出两套页面，旧的静止、新的能动，也就是重影。
+            todayFragment = (TodayFragment) fm.findFragmentByTag(TAG_TODAY);
+            weekFragment = (WeekFragment) fm.findFragmentByTag(TAG_SCHEDULE);
+            agendaFragment = (AgendaFragment) fm.findFragmentByTag(TAG_AGENDA);
+            mineFragment = (MineFragment) fm.findFragmentByTag(TAG_MINE);
+            currentTag = savedInstanceState.getString(KEY_TAB, TAG_TODAY);
+            showOnly(currentTag);
+        }
 
         BottomNavigationView nav = findViewById(R.id.bottom_nav);
+        nav.setSelectedItemId(navIdOf(currentTag));
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_schedule) {
@@ -148,6 +161,43 @@ public class MainActivity extends AppCompatActivity {
 
     private FragmentManager fm() {
         return getSupportFragmentManager();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_TAB, currentTag);
+    }
+
+    /** 只显示当前页签，其余三个隐藏；重建后用它把可见性摆正。 */
+    private void showOnly(String tag) {
+        FragmentManager manager = fm();
+        FragmentTransaction tx = manager.beginTransaction();
+        for (String other : new String[]{TAG_TODAY, TAG_SCHEDULE, TAG_AGENDA, TAG_MINE}) {
+            Fragment fragment = manager.findFragmentByTag(other);
+            if (fragment == null) {
+                continue;
+            }
+            if (other.equals(tag)) {
+                tx.show(fragment);
+            } else {
+                tx.hide(fragment);
+            }
+        }
+        tx.commit();
+    }
+
+    private int navIdOf(String tag) {
+        if (TAG_SCHEDULE.equals(tag)) {
+            return R.id.nav_schedule;
+        }
+        if (TAG_AGENDA.equals(tag)) {
+            return R.id.nav_agenda;
+        }
+        if (TAG_MINE.equals(tag)) {
+            return R.id.nav_mine;
+        }
+        return R.id.nav_today;
     }
 
     /** 打开课程编辑页；传入 null 表示新增。 */
