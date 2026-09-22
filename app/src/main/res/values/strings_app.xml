@@ -279,7 +279,13 @@
     <string name="reminder_holiday">节假日不提醒</string>
     <string name="reminder_holiday_hint">内置法定节假日，放假期间不打扰</string>
     <string name="reminder_live">状态栏 / 灵动岛显示当前课程</string>
-    <string name="reminder_live_hint">仅在当天第一节课前到最后一节课后常驻，其余时间不占用</string>
+    <string name="reminder_live_hint">开启后应用常驻后台：上课时状态栏 / 灵动岛自动显示课程与进度，提醒也会按时重建。为了让系统别把它清掉，建议把本应用加入电池优化白名单（系统设置 → 电池 → 不受限制）。</string>
+    <string name="reminder_keep_alive">后台保活设置</string>
+    <string name="reminder_keep_alive_hint">从最近任务里划掉应用，在小米等系统上等于「强制停止」：进程会被杀掉，已经排好的上课提醒也会一并撤销。要让提醒和状态栏一直有效，请把本应用加入自启动与省电白名单。</string>
+    <string name="keep_alive_autostart">自启动管理</string>
+    <string name="keep_alive_battery">电池优化白名单</string>
+    <string name="keep_alive_app_info">应用信息页</string>
+    <string name="keep_alive_no_settings">打不开系统设置，请到「设置 → 应用 → QUT课表」里手动允许自启动并设为不受限制</string>
 
     <!-- 备份 -->
     <string name="backup_export_json">导出 JSON 备份</string>
@@ -312,7 +318,11 @@
     <string name="widget_tomorrow">明日课程</string>
     <string name="widget_no_class">今天没有课</string>
     <string name="widget_count_fmt">共 %1$d 节</string>
-    <string name="widget_description">课表概览：今天 / 明天的课程与当日课程数</string>
+    <string name="widget_description">课表概览：上课进度、还有多久上课、今天 / 明天的课程</string>
+    <string name="widget_hero_now_fmt">正在上课 · %1$s</string>
+    <string name="widget_hero_left_fmt">还剩 %1$d 分钟下课</string>
+    <string name="widget_hero_next_fmt">%1$d 分钟后上课 · %2$s</string>
+    <string name="widget_hero_none">今天没有课了</string>
 
     <string name="coming_soon">该页面正在施工中</string>
 </resources>

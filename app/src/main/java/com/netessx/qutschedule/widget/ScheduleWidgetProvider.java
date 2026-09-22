@@ -17,9 +17,11 @@ import com.netessx.qutschedule.data.ScheduleRepository;
 import com.netessx.qutschedule.model.Course;
 import com.netessx.qutschedule.model.Semester;
 import com.netessx.qutschedule.util.ColorPalette;
+import com.netessx.qutschedule.util.Countdown;
 import com.netessx.qutschedule.util.Dates;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -34,6 +36,8 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
 
     private static final DateTimeFormatter HM = DateTimeFormatter.ofPattern("HH:mm");
     private static final int MAX_ROWS = 4;
+    /** 距离上课不到这么多分钟时，倒计时用强调色高亮。 */
+    private static final int UPCOMING_MINUTES = 30;
 
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] appWidgetIds) {
@@ -103,6 +107,7 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
             title.append(" · 第 ").append(Math.max(1, semester.weekOf(today))).append(" 周");
         }
         views.setTextViewText(R.id.widget_title, title.toString());
+        bindHero(context, views, today);
 
         if (courses.isEmpty()) {
             views.addView(R.id.widget_rows, row(context, null,
@@ -131,6 +136,60 @@ public class ScheduleWidgetProvider extends AppWidgetProvider {
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         views.setOnClickPendingIntent(R.id.widget_root, pending);
         return views;
+    }
+
+    /**
+     * 实时区：上课中显示进度条，上课前高亮倒计时。
+     *
+     * <p>小组件本身不会动，靠 {@link com.netessx.qutschedule.live.LiveUpdateService} 的常驻
+     * 服务按节拍重推（上课中 15 秒一次），所以进度是跟着走的。
+     */
+    private static void bindHero(Context context, RemoteViews views, LocalDate today) {
+        LocalDateTime now = LocalDateTime.now();
+        Course current = ScheduleRepository.currentCourse(context, now);
+        if (current != null) {
+            LocalTime[] times = ScheduleRepository.timesOf(context, current, today);
+            int start = times[0].getHour() * 60 + times[0].getMinute();
+            int end = times[1].getHour() * 60 + times[1].getMinute();
+            int nowMinutes = now.getHour() * 60 + now.getMinute();
+
+            views.setViewVisibility(R.id.widget_hero_progress, View.VISIBLE);
+            views.setProgressBar(R.id.widget_hero_progress, 100,
+                    Countdown.percent(start, end, nowMinutes), false);
+            views.setTextViewText(R.id.widget_hero_title,
+                    context.getString(R.string.widget_hero_now_fmt, current.name));
+            views.setTextViewText(R.id.widget_hero_sub,
+                    context.getString(R.string.widget_hero_left_fmt,
+                            Countdown.minutesToEnd(end, nowMinutes)));
+            views.setTextColor(R.id.widget_hero_title, ColorPalette.colorOf(context, current));
+            return;
+        }
+
+        views.setViewVisibility(R.id.widget_hero_progress, View.GONE);
+        Course next = ScheduleRepository.nextCourse(context, now);
+        if (next == null) {
+            views.setTextViewText(R.id.widget_hero_title,
+                    context.getString(R.string.widget_hero_none));
+            views.setTextViewText(R.id.widget_hero_sub, "");
+            views.setTextColor(R.id.widget_hero_title,
+                    context.getColor(R.color.text_secondary));
+            return;
+        }
+
+        LocalTime[] times = ScheduleRepository.timesOf(context, next, today);
+        int minutes = (int) java.time.Duration.between(now.toLocalTime(), times[0]).toMinutes();
+        StringBuilder sub = new StringBuilder(HM.format(times[0]))
+                .append(" - ").append(HM.format(times[1]));
+        if (next.location != null && !next.location.isEmpty()) {
+            sub.append(" · ").append(next.location);
+        }
+        views.setTextViewText(R.id.widget_hero_title,
+                context.getString(R.string.widget_hero_next_fmt, Math.max(0, minutes), next.name));
+        views.setTextViewText(R.id.widget_hero_sub, sub.toString());
+        // 快到点了就用强调色，否则用普通文字色，一眼看出「马上要上课」
+        views.setTextColor(R.id.widget_hero_title, minutes <= UPCOMING_MINUTES
+                ? context.getColor(R.color.colorPrimary)
+                : context.getColor(R.color.text_secondary));
     }
 
     private static RemoteViews row(Context context, Course course, String main, String sub) {

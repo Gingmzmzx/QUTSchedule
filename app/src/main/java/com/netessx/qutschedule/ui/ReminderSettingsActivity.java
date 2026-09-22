@@ -1,11 +1,14 @@
 package com.netessx.qutschedule.ui;
 
+import android.content.ComponentName;
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
@@ -63,8 +66,63 @@ public class ReminderSettingsActivity extends BaseActivity {
         live.addView(SettingsUi.switchRow(this, getString(R.string.reminder_live),
                 prefs.liveUpdateEnabled, (button, checked) -> prefs.liveUpdateEnabled = checked));
         live.addView(SettingsUi.label(this, getString(R.string.reminder_live_hint)));
+        live.addView(SettingsUi.buttonRow(this, getString(R.string.reminder_keep_alive),
+                v -> showKeepAliveOptions()));
 
         setPageContent(SettingsUi.scrollWrap(this, column));
+    }
+
+    /**
+     * 直达厂商的保活开关。
+     *
+     * <p>从最近任务划掉应用，在小米这类 ROM 上等于「强制停止」：进程被杀，已排的闹钟也会被撤销，
+     * 提醒和状态栏一起失效。这是系统行为，代码绕不过去，只能引导用户去开自启动与省电白名单。
+     */
+    private void showKeepAliveOptions() {
+        String[] items = {
+                getString(R.string.keep_alive_autostart),
+                getString(R.string.keep_alive_battery),
+                getString(R.string.keep_alive_app_info),
+        };
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.reminder_keep_alive)
+                .setMessage(R.string.reminder_keep_alive_hint)
+                .setItems(items, (dialog, which) -> {
+                    if (which == 0) {
+                        // 小米的自启动管理页；别的 ROM 没有这个组件，会退回应用信息页
+                        openSafely(new Intent().setComponent(new ComponentName(
+                                "com.miui.securitycenter",
+                                "com.miui.permcenter.autostart.AutoStartManagementActivity")));
+                    } else if (which == 1) {
+                        openSafely(new Intent(
+                                android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
+                    } else {
+                        openAppInfo();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    /** 目标页面打不开就退到应用信息页 —— 各家 ROM 的设置项名字与位置都不一样。 */
+    private void openSafely(Intent intent) {
+        try {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (RuntimeException e) {
+            openAppInfo();
+        }
+    }
+
+    private void openAppInfo() {
+        try {
+            startActivity(new Intent(
+                    android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    android.net.Uri.parse("package:" + getPackageName()))
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        } catch (RuntimeException e) {
+            Toast.makeText(this, R.string.keep_alive_no_settings, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

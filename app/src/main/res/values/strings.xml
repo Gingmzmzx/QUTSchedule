@@ -86,6 +86,10 @@
     <string name="notif_next_fmt">下一节 · %1$s</string>
     <string name="notif_remaining_fmt">还剩 %1$d 分钟</string>
     <string name="notif_minutes_fmt">%1$d 分钟后开始</string>
+    <!-- 没有课时的那条常驻通知：前台服务必须带一条通知 -->
+    <string name="notif_idle_title">QUT课表 · 后台运行中</string>
+    <string name="notif_idle_none">今天没有课了</string>
+    <string name="notif_idle_next_fmt">下节课 %1$s · %2$s</string>
 
     <string name="type_course">课程</string>
     <string name="type_club">社团活动</string>

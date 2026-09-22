@@ -120,6 +120,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         requestNotificationPermission();
+        // 应用在前台时把常驻服务拉起来：后台进程没资格启动前台服务，只能在这里起
+        LiveUpdateService.start(this);
         // 每次启动都查，只在新版本存在时才弹提示，失败静默忽略
         com.netessx.qutschedule.ui.UpdatePrompt.checkSilently(this);
         // 顺带拉一次公告，只有没看过的 id 才会弹
