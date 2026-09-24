@@ -194,8 +194,6 @@ app/src/main/java/com/netessx/qutschedule/
 └── util/                        日期、节次、配色、调休、排版等工具
 ```
 
-存储结构见 [`REFACTOR_PLAN.md`](REFACTOR_PLAN.md)，产品设计见 [`DESIGN.md`](DESIGN.md)。
-
 ---
 
 ## 版本号规则
@@ -219,7 +217,11 @@ app/src/main/java/com/netessx/qutschedule/
 
 ## 贡献
 
-欢迎 Issue 与 PR。提 PR 前请确认：
+欢迎 Issue 与 PR。
+
+**注：由于后期可能还会添加爬取教务系统的功能，本项目目前暂不接受对于其他学校的适配。如果您使用本项目适配了自己学校，可以提交pr修改本项目README并添加指向您自己仓库的链接。感谢理解！**
+
+提 PR 前请确认：
 
 ```bash
 ./gradlew :app:assembleDebug :app:testDebugUnitTest
