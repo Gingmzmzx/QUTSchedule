@@ -10,6 +10,7 @@ import com.google.android.material.color.DynamicColors;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.model.Prefs;
 import com.netessx.qutschedule.util.CrashLog;
+import com.netessx.qutschedule.util.Trace;
 import com.netessx.qutschedule.widget.ScheduleWidgetProvider;
 
 /**
@@ -22,6 +23,8 @@ public class QutScheduleApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Trace.install(this);
+        Trace.add("进程启动");
         CrashLog.install(this);
         try {
             Prefs prefs = ScheduleStore.get(this).data().prefs;

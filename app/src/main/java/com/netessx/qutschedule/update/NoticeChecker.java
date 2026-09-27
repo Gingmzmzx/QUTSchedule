@@ -70,6 +70,7 @@ public final class NoticeChecker {
 
             int code = conn.getResponseCode();
             if (code < 200 || code >= 300) {
+                com.netessx.qutschedule.util.Trace.add("获取公告 HTTP " + code);
                 result.error = "服务器返回 " + code;
                 return result;
             }
@@ -89,6 +90,7 @@ public final class NoticeChecker {
             return result;
         } catch (Exception e) {
             Log.w(TAG, "获取公告失败", e);
+            com.netessx.qutschedule.util.Trace.add("获取公告失败: " + e);
             result.error = e.getMessage() == null ? e.toString() : e.getMessage();
             return result;
         } finally {

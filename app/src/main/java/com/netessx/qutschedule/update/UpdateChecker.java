@@ -90,6 +90,7 @@ public final class UpdateChecker {
 
             int code = conn.getResponseCode();
             if (code < 200 || code >= 300) {
+                com.netessx.qutschedule.util.Trace.add("检查更新 HTTP " + code);
                 result.error = "服务器返回 " + code;
                 return result;
             }
@@ -109,12 +110,14 @@ public final class UpdateChecker {
             result.forceUpdate = json.has("forceUpdate") && !json.get("forceUpdate").isJsonNull()
                     && json.get("forceUpdate").getAsBoolean();
             result.ok = true;
-            result.hasUpdate = isNewer(ctx, optString(json, "versionCode"), result.latestTag)
-                    // 服务端说强制更新就一律提示，免得用户卡在旧版本上
-                    || result.forceUpdate;
+            // 有没有新版本只看版本比较；forceUpdate 只决定「这次更新能不能推迟」，
+            // 不能因为它是 true 就在 versionCode 相同时也弹窗
+            result.hasUpdate = isNewer(ctx, optString(json, "versionCode"), result.latestTag);
             return result;
         } catch (Exception e) {
             Log.w(TAG, "检查更新失败", e);
+            // 写进运行轨迹：这样「关于 → 导出诊断日志」里能直接看到失败原因，不用连电脑抓 logcat
+            com.netessx.qutschedule.util.Trace.add("检查更新失败: " + e);
             result.error = e.getMessage() == null ? e.toString() : e.getMessage();
             return result;
         } finally {

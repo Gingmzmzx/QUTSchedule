@@ -10,6 +10,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
 import com.netessx.qutschedule.util.CrashLog;
+import com.netessx.qutschedule.util.Trace;
 
 /** 关于：版本与数据说明。 */
 public class AboutActivity extends BaseActivity {
@@ -37,8 +38,8 @@ public class AboutActivity extends BaseActivity {
                 }));
         column.addView(SettingsUi.buttonRow(this, getString(R.string.about_replay_onboarding),
                 v -> startActivity(OnboardingActivity.newIntent(this))));
-        // 上次闪退留下的堆栈：有才显示，没有就不占地方
-        if (CrashLog.exists(this)) {
+        // 崩溃堆栈 + 运行轨迹：有才显示，没有就不占地方
+        if (CrashLog.exists(this) || Trace.exists(this)) {
             column.addView(SettingsUi.buttonRow(this, getString(R.string.about_crash_log),
                     v -> showCrashLog()));
         }
@@ -46,9 +47,18 @@ public class AboutActivity extends BaseActivity {
         setPageContent(SettingsUi.scrollWrap(this, column));
     }
 
-    /** 分享或删除上次闪退的堆栈。 */
+    /** 分享或删除诊断信息：崩溃堆栈 + 运行轨迹。 */
     private void showCrashLog() {
-        final String log = CrashLog.read(this);
+        String crash = CrashLog.read(this);
+        String trace = Trace.read(this);
+        StringBuilder all = new StringBuilder();
+        if (!crash.isEmpty()) {
+            all.append("===== 崩溃堆栈 =====\n").append(crash).append("\n\n");
+        }
+        if (!trace.isEmpty()) {
+            all.append("===== 运行轨迹 =====\n").append(trace);
+        }
+        final String log = all.toString();
         if (log.isEmpty()) {
             Toast.makeText(this, R.string.about_crash_log_none, Toast.LENGTH_SHORT).show();
             return;
@@ -59,6 +69,7 @@ public class AboutActivity extends BaseActivity {
                 .setNegativeButton(R.string.cancel, null)
                 .setNeutralButton(R.string.about_crash_log_clear, (dialog, which) -> {
                     CrashLog.clear(this);
+                    Trace.clear(this);
                     recreate();
                 })
                 .setPositiveButton(R.string.about_crash_log_share, (dialog, which) -> {
