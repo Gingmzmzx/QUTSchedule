@@ -78,6 +78,7 @@
 
     <string name="channel_reminder_name">上课提醒</string>
     <string name="channel_reminder_desc">上课前按设定时间提醒</string>
+    <string name="channel_update_name">应用更新</string>
     <string name="channel_live_name">当前课程</string>
     <string name="channel_live_desc">在状态栏持续显示正在进行的课程</string>
     <string name="notif_reminder_title_fmt">%1$s 即将开始</string>

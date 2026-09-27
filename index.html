@@ -7,7 +7,7 @@
 <meta name="description" content="青岛理工大学学生的开源课表应用：PDF 一键导入、周次自动推算、临时调课、课程提醒、桌面小组件、备份同步。无账号、无埋点、数据只存本地。">
 <meta property="og:title" content="QUT课表 · 青岛理工大学课表应用">
 <meta property="og:description" content="PDF 一键导入，黄岛校区楼层错峰时间自动识别。开源免费，数据只存在你手机里。">
-<meta property="og:image" content="/picture/week.png">
+<meta property="og:image" content="/media/images/7207c69d320fe22c229cf8878f6d6074.png">
 <style>
   :root {
     --primary: #6750a4;
@@ -212,11 +212,11 @@
     <h2>界面速览</h2>
     <p class="sub">底部四个主页面：今日 / 课表 / 日程 / 我的，外加一个桌面小组件。</p>
     <div class="shots">
-      <figure><img src="picture/today.png" alt="今日"><figcaption>今日</figcaption></figure>
-      <figure><img src="picture/week.png" alt="课表"><figcaption>课表</figcaption></figure>
-      <figure><img src="picture/agenda.png" alt="日程"><figcaption>日程</figcaption></figure>
-      <figure><img src="picture/mine.png" alt="我的"><figcaption>我的</figcaption></figure>
-      <figure><img src="picture/widget.png" alt="桌面小组件"><figcaption>桌面小组件</figcaption></figure>
+      <figure><img src="/media/images/9d14dd0dfa542ba40c3f916c0e5b62a2.png" alt="今日"><figcaption>今日</figcaption></figure>
+      <figure><img src="/media/images/7207c69d320fe22c229cf8878f6d6074.png" alt="课表"><figcaption>课表</figcaption></figure>
+      <figure><img src="/media/images/0ce71dec750f59a12b8ebd3df3179a5d.png" alt="日程"><figcaption>日程</figcaption></figure>
+      <figure><img src="/media/images/6803227cd387a890534c6643610d7c82.png" alt="我的"><figcaption>我的</figcaption></figure>
+      <figure><img src="/media/images/fd312c64c51ba68f8f357d739025d745.png" alt="桌面小组件"><figcaption>桌面小组件</figcaption></figure>
     </div>
   </div>
 </section>
@@ -407,10 +407,9 @@
 
 <script>
 /* 最新版本从自建接口取；取不到就保持默认的 GitHub 发布页链接，页面照常能用。
-   注意 latest.json 需要允许跨域（Access-Control-Allow-Origin），
-   本页部署在同一个域名下则不受影响。 */
+   接口需要允许跨域（Access-Control-Allow-Origin），本页与接口同域时不受影响。 */
 (function () {
-  var SITE = '';
+  var RELEASE_API = 'https://apps.netessx.com/QUTSchedule/releases/latest';
   var top = document.getElementById('download-top');
   var bottom = document.getElementById('download-bottom');
   var box = document.getElementById('release');
@@ -420,7 +419,13 @@
     if (el && value) { el.textContent = value; } else if (el) { el.hidden = true; }
   }
 
-  fetch(SITE + '/latest.json', { cache: 'no-store' })
+  function sizeText(bytes) {
+    if (!bytes) { return ''; }
+    if (bytes < 1024 * 1024) { return Math.max(1, Math.round(bytes / 1024)) + ' KB'; }
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  }
+
+  fetch(RELEASE_API, { cache: 'no-store' })
     .then(function (res) {
       if (!res.ok) { throw new Error('HTTP ' + res.status); }
       return res.json();
@@ -429,20 +434,23 @@
       var version = String(data.versionName || '').trim();
       var build = String(data.versionCode || '').trim();
       var notes = String(data.desc || '').trim();
+      var apk = String(data.download || '').trim();
       if (!version) { throw new Error('缺少 versionName'); }
 
-      var apk = SITE + '/releases/QUTSchedule_' + version + '_build' + build + '.apk';
-      top.href = apk;
-      bottom.href = apk;
-      top.textContent = '下载 ' + version;
+      if (apk) {
+        top.href = apk;
+        bottom.href = apk;
+      }
+      top.textContent = apk ? '下载 ' + version : '前往下载';
 
       text('release-version', '最新版本 ' + version);
       text('release-build', build ? 'build ' + build : '');
-      text('release-notes', notes);
+      text('release-notes', sizeText(data.size)
+        ? '安装包 ' + sizeText(data.size) + '\n' + notes : notes);
       box.hidden = false;
     })
     .catch(function () {
-      // 网络被墙、接口挂了都走这里：什么都不做，下载按钮仍指向 GitHub 发布页
+      // 接口挂了、被跨域拦了都走这里：什么都不做，下载按钮仍指向 GitHub 发布页
     });
 })();
 </script>

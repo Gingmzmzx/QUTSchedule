@@ -132,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         refreshAll();
+        // 刚从「安装未知应用」授权页回来：已授权就接着下载，没授权就把更新弹窗重新弹出来
+        com.netessx.qutschedule.ui.UpdatePrompt.resumePending(this);
     }
 
     private void requestNotificationPermission() {

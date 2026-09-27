@@ -19,18 +19,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * 检查更新：读自建接口 {@code latest.json} 里的最新版本，和本机比大小。
+ * 检查更新：读自建接口 {@code QUTSchedule/releases/latest} 里的最新版本，和本机比大小。
  *
- * <p>接口是一份静态 JSON，形如
- * {@code {"versionName":"v1.3.1","versionCode":"26092002","desc":"修复了…"}}。
+ * <p>接口返回形如
+ * {@code {"versionName":"v1.4.1","versionCode":26092223,"desc":"…",
+ * "download":"https://apps.netessx.com/QUTSchedule/build/26092223",
+ * "size":6475518,"sha256":"…","forceUpdate":false}}。
  * 先比 {@code versionCode}（带日期与构建序号，最可靠），拿不到再退回比语义化版本号。
- * 用自建接口而不是 GitHub API，是因为后者在国内经常连不上。
+ * 走自建接口而不是 GitHub API，是因为后者在国内经常连不上。
  */
 public final class UpdateChecker {
 
     private static final String TAG = "UpdateChecker";
-    private static final String LATEST_JSON = "https://qutschedule.netessx.com/latest.json";
-    /** 「前往下载」打开的地址：官网首页，下载与版本说明都在那。 */
+    private static final String LATEST_JSON =
+            "https://apps.netessx.com/QUTSchedule/releases/latest";
+    /** 接口没给下载地址时的兜底：官网首页。 */
     private static final String DOWNLOAD_PAGE = "https://qutschedule.netessx.com/";
     private static final int TIMEOUT_MS = 10000;
 
@@ -49,6 +52,14 @@ public final class UpdateChecker {
         public String releaseUrl = DOWNLOAD_PAGE;
         public String notes = "";
         public String error;
+        /** 新版 APK 的直链；为空表示只能去官网下。 */
+        public String downloadUrl = "";
+        /** APK 字节数，0 表示未知。 */
+        public long size;
+        /** APK 的 sha256，为空表示不校验。 */
+        public String sha256 = "";
+        /** 服务端标记的强制更新。 */
+        public boolean forceUpdate;
     }
 
     public interface Callback {
@@ -89,8 +100,18 @@ public final class UpdateChecker {
                     .getAsJsonObject();
             result.latestTag = optString(json, "versionName");
             result.notes = optString(json, "desc");
+            result.downloadUrl = optString(json, "download");
+            if (!result.downloadUrl.isEmpty()) {
+                result.releaseUrl = result.downloadUrl;
+            }
+            result.size = optLong(json, "size");
+            result.sha256 = optString(json, "sha256");
+            result.forceUpdate = json.has("forceUpdate") && !json.get("forceUpdate").isJsonNull()
+                    && json.get("forceUpdate").getAsBoolean();
             result.ok = true;
-            result.hasUpdate = isNewer(ctx, optString(json, "versionCode"), result.latestTag);
+            result.hasUpdate = isNewer(ctx, optString(json, "versionCode"), result.latestTag)
+                    // 服务端说强制更新就一律提示，免得用户卡在旧版本上
+                    || result.forceUpdate;
             return result;
         } catch (Exception e) {
             Log.w(TAG, "检查更新失败", e);
@@ -118,6 +139,17 @@ public final class UpdateChecker {
 
     private static String optString(JsonObject json, String key) {
         return json.has(key) && !json.get(key).isJsonNull() ? json.get(key).getAsString() : "";
+    }
+
+    private static long optLong(JsonObject json, String key) {
+        if (!json.has(key) || json.get(key).isJsonNull()) {
+            return 0;
+        }
+        try {
+            return json.get(key).getAsLong();
+        } catch (RuntimeException e) {
+            return 0;
+        }
     }
 
     /**

@@ -25,7 +25,8 @@ import java.util.concurrent.Executors;
 public final class NoticeChecker {
 
     private static final String TAG = "NoticeChecker";
-    private static final String NOTICE_JSON = "https://qutschedule.netessx.com/notice.json";
+    private static final String NOTICE_JSON =
+            "https://apps.netessx.com/QUTSchedule/notices/latest";
     private static final int TIMEOUT_MS = 10000;
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
@@ -76,8 +77,12 @@ public final class NoticeChecker {
             JsonObject json = JsonParser.parseString(tolerant(body)).getAsJsonObject();
             result.id = json.has("id") && !json.get("id").isJsonNull()
                     ? json.get("id").getAsInt() : 0;
-            result.time = json.has("time") && !json.get("time").isJsonNull()
-                    ? json.get("time").getAsLong() : 0L;
+            // 新接口给的是毫秒的 timestamp，老接口给的是秒的 time，统一换算成秒
+            long raw = json.has("timestamp") && !json.get("timestamp").isJsonNull()
+                    ? json.get("timestamp").getAsLong()
+                    : (json.has("time") && !json.get("time").isJsonNull()
+                            ? json.get("time").getAsLong() : 0L);
+            result.time = raw > 100_000_000_000L ? raw / 1000L : raw;
             result.title = optString(json, "title");
             result.content = optString(json, "content");
             result.ok = result.id > 0;

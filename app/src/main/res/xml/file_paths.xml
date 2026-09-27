@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 只开放应用自己的外部私有目录：下载好的新版本 APK 放在这里，交给系统安装器读取 -->
+<paths>
+    <external-files-path
+        name="update"
+        path="." />
+</paths>
