@@ -65,6 +65,10 @@ public class ReminderSettingsActivity extends BaseActivity {
         LinearLayout live = SettingsUi.card(this, column);
         live.addView(SettingsUi.switchRow(this, getString(R.string.reminder_live),
                 prefs.liveUpdateEnabled, (button, checked) -> prefs.liveUpdateEnabled = checked));
+        live.addView(SettingsUi.switchRow(this, getString(R.string.reminder_media_session),
+                prefs.mediaSessionEnabled,
+                (button, checked) -> prefs.mediaSessionEnabled = checked));
+        live.addView(SettingsUi.label(this, getString(R.string.reminder_media_session_hint)));
         live.addView(SettingsUi.label(this, getString(R.string.reminder_live_hint)));
         live.addView(SettingsUi.buttonRow(this, getString(R.string.reminder_keep_alive),
                 v -> showKeepAliveOptions()));

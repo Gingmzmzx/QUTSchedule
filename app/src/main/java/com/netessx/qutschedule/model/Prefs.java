@@ -43,6 +43,8 @@ public class Prefs {
     public boolean reminderEnabled = true;
     public int defaultReminderMinutes = 15;
     public boolean liveUpdateEnabled = true;
+    /** 是否把当前课程注册成媒体会话（锁屏 / 灵动岛的进度卡片）。关掉后不再注册。 */
+    public boolean mediaSessionEnabled = true;
     public boolean dndEnabled;
     public String dndMode = DND_SILENT;
     public boolean holidaySkip = true;
@@ -126,6 +128,7 @@ public class Prefs {
         p.reminderEnabled = reminderEnabled;
         p.defaultReminderMinutes = defaultReminderMinutes;
         p.liveUpdateEnabled = liveUpdateEnabled;
+        p.mediaSessionEnabled = mediaSessionEnabled;
         p.dndEnabled = dndEnabled;
         p.dndMode = dndMode;
         p.holidaySkip = holidaySkip;

@@ -291,6 +291,8 @@
     <string name="reminder_holiday_hint">内置法定节假日，放假期间不打扰</string>
     <string name="reminder_live">状态栏 / 灵动岛显示当前课程</string>
     <string name="reminder_live_hint">开启后应用常驻后台：上课时状态栏 / 灵动岛自动显示课程与进度，提醒也会按时重建。为了让系统别把它清掉，建议把本应用加入电池优化白名单（系统设置 → 电池 → 不受限制）。</string>
+    <string name="reminder_media_session">锁屏 / 灵动岛显示播放进度</string>
+    <string name="reminder_media_session_hint">开启后把当前课程注册成一个媒体会话，锁屏、状态栏与各家灵动岛会显示课程名和上课进度。关掉后不再注册，只保留上一条普通通知。</string>
     <string name="reminder_keep_alive">后台保活设置</string>
     <string name="reminder_keep_alive_hint">从最近任务里划掉应用，在小米等系统上等于「强制停止」：进程会被杀掉，已经排好的上课提醒也会一并撤销。要让提醒和状态栏一直有效，请把本应用加入自启动与省电白名单。</string>
     <string name="keep_alive_autostart">自启动管理</string>

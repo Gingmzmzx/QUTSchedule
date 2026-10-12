@@ -111,6 +111,10 @@ public class LiveUpdateService extends Service {
                 app.stopService(new Intent(app, LiveUpdateService.class));
                 return;
             }
+            if (!mediaEnabled(app)) {
+                // 用户把媒体会话关了：立即收回，不必等下一次刷新
+                ClassMediaSession.stop();
+            }
             updateContent(app);
         } catch (Throwable t) {
             Log.w(TAG, "刷新状态栏失败", t);
@@ -122,7 +126,8 @@ public class LiveUpdateService extends Service {
         LocalDateTime now = LocalDateTime.now();
         Course current = ScheduleRepository.currentCourse(ctx, now);
         if (current != null) {
-            post(ctx, build(ctx, current, now, true));
+            // 关掉媒体会话后只留普通通知，不再往系统注册一条「正在播放」
+            post(ctx, build(ctx, current, now, mediaEnabled(ctx)));
             setInClass(ctx, true);
             return;
         }
@@ -135,6 +140,15 @@ public class LiveUpdateService extends Service {
             post(ctx, build(ctx, next, now, false));
         } else {
             post(ctx, idle(ctx, next, now));
+        }
+    }
+
+    /** 是否注册媒体会话（锁屏 / 灵动岛那套）。用户关掉后一律不再注册。 */
+    private static boolean mediaEnabled(Context ctx) {
+        try {
+            return ScheduleStore.get(ctx).data().prefs.mediaSessionEnabled;
+        } catch (Throwable t) {
+            return false;
         }
     }
 
@@ -309,7 +323,12 @@ public class LiveUpdateService extends Service {
         LocalDateTime now = LocalDateTime.now();
         Course current = ScheduleRepository.currentCourse(this, now);
         if (current != null) {
-            return build(this, current, now, true);
+            boolean media = mediaEnabled(this);
+            if (!media) {
+                // 开关刚被关掉：把之前注册的会话收回，避免留下一条没人管的媒体卡片
+                ClassMediaSession.stop();
+            }
+            return build(this, current, now, media);
         }
         return idle(this, ScheduleRepository.nextCourse(this, now), now);
     }
