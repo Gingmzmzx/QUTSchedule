@@ -251,6 +251,7 @@
     <!-- 课程管理 -->
     <string name="course_manage_count_fmt">%1$d 门课程</string>
     <string name="course_manage_rename">重命名课程</string>
+    <string name="course_manage_pick_occurrence">选择要编辑的课次</string>
     <string name="course_manage_delete_all">删除该课程全部课次</string>
     <string name="course_manage_move">课程调动</string>
     <string name="course_manage_move_hint">把这一天的课整体挪到另一天，之后可以在目标日期逐条撤销</string>

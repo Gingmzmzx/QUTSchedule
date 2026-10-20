@@ -32,7 +32,7 @@
     <string name="field_repeat">重复方式</string>
     <string name="field_day">星期</string>
     <string name="field_slot">节次</string>
-    <string name="field_weeks">周次（如 4-17周、1-16周(双)、第5周）</string>
+    <string name="field_weeks">周次（如 4-17周，多段写成 4-5周、7-18周）</string>
     <string name="field_date">日期</string>
     <string name="field_start_time">开始时间</string>
     <string name="field_end_time">结束时间</string>

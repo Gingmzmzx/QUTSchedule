@@ -39,6 +39,11 @@ public final class Dates {
         return WEEK_CN[date.getDayOfWeek().getValue() - 1];
     }
 
+    /** 中文星期，{@code dayOfWeek} 取 1–7；越界返回「?」。 */
+    public static String weekName(int dayOfWeek) {
+        return dayOfWeek >= 1 && dayOfWeek <= 7 ? WEEK_CN[dayOfWeek - 1] : "?";
+    }
+
     public static boolean isWeekend(LocalDate date) {
         DayOfWeek d = date.getDayOfWeek();
         return d == DayOfWeek.SATURDAY || d == DayOfWeek.SUNDAY;

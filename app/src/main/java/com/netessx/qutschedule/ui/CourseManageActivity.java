@@ -83,7 +83,7 @@ public class CourseManageActivity extends BaseActivity {
                 .setTitle(name)
                 .setItems(actions, (dialog, which) -> {
                     if (which == 0 && !courses.isEmpty()) {
-                        startActivity(CourseEditActivity.intentFor(this, courses.get(0)));
+                        pickCourse(courses);
                     } else if (which == 1) {
                         rename(name, courses);
                     } else if (which == 2) {
@@ -91,6 +91,49 @@ public class CourseManageActivity extends BaseActivity {
                     }
                 })
                 .show();
+    }
+
+    /**
+     * 编辑哪一次课。
+     *
+     * <p>同一门课可能一周上多次（周一 1-2 节、周三 3-4 节各是一条记录），
+     * 原来固定编辑第一条，其余课次改不了。这里多课次时先让用户选。
+     */
+    private void pickCourse(final List<Course> courses) {
+        if (courses.size() == 1) {
+            startActivity(CourseEditActivity.intentFor(this, courses.get(0)));
+            return;
+        }
+        String[] items = new String[courses.size()];
+        for (int i = 0; i < courses.size(); i++) {
+            items[i] = describeOccurrence(courses.get(i));
+        }
+        new MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.course_manage_pick_occurrence)
+                .setItems(items, (dialog, which) ->
+                        startActivity(CourseEditActivity.intentFor(this, courses.get(which))))
+                .show();
+    }
+
+    /** 一次课的简要描述：日期或周几 + 节次 + 地点 + 周次。 */
+    private String describeOccurrence(Course course) {
+        StringBuilder text = new StringBuilder();
+        LocalDate date = com.netessx.qutschedule.util.Dates.parse(course.date);
+        if (date != null) {
+            text.append(date.format(com.netessx.qutschedule.util.Dates.YMD))
+                    .append(" 周").append(com.netessx.qutschedule.util.Dates.weekName(date));
+        } else {
+            text.append("周").append(com.netessx.qutschedule.util.Dates.weekName(course.dayOfWeek));
+        }
+        text.append("  ").append(course.startSlot).append('-').append(course.endSlot)
+                .append(" 节");
+        if (course.location != null && !course.location.isEmpty()) {
+            text.append(" · ").append(course.location);
+        }
+        if (course.weekSpec != null && !course.weekSpec.isEmpty()) {
+            text.append(" · ").append(course.weekSpec);
+        }
+        return text.toString();
     }
 
     private void rename(final String oldName, final List<Course> courses) {
