@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 表盘图标：深底圆角方块 + 三条课程块。纯矢量，几 KB。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#1C1B1F"
+        android:pathData="M20,14 L88,14 A10,10 0 0 1 98,24 L98,84 A10,10 0 0 1 88,94 L20,94 A10,10 0 0 1 10,84 L10,24 A10,10 0 0 1 20,14 Z" />
+    <path
+        android:fillColor="#D0BCFF"
+        android:pathData="M22,30 L56,30 A4,4 0 0 1 60,34 L60,44 A4,4 0 0 1 56,48 L22,48 A4,4 0 0 1 18,44 L18,34 A4,4 0 0 1 22,30 Z" />
+    <path
+        android:fillColor="#CAC4D0"
+        android:pathData="M22,54 L80,54 A4,4 0 0 1 84,58 L84,64 A4,4 0 0 1 80,68 L22,68 A4,4 0 0 1 18,64 L18,58 A4,4 0 0 1 22,54 Z" />
+    <path
+        android:fillColor="#4A4458"
+        android:pathData="M22,74 L88,74 A3,3 0 0 1 91,77 L91,79 A3,3 0 0 1 88,82 L22,82 A3,3 0 0 1 19,79 L19,77 A3,3 0 0 1 22,74 Z" />
+</vector>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        没有这一条，手表系统会把包当成手机应用直接拒绝启动
+        （OPPO Watch 2 / Qualcomm OW20W1 会报 "missing uses-feature watch"）。
+    -->
+    <uses-feature
+        android:name="android.hardware.type.watch"
+        android:required="true" />
+
+    <!--
+        经典蓝牙的 RFCOMM 收发：手机把课表推过来用。
+        minSdk 27，蓝牙权限在安装时授予，不需要运行时申请。
+    -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@drawable/ic_watch"
+        android:label="@string/app_name"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <!-- 声明不需要配对的手机/手表协同进程，自己独立运行 -->
+        <meta-data
+            android:name="com.google.android.wearable.standalone"
+            android:value="true" />
+
+        <activity
+            android:name=".WearActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 常驻等手机通过蓝牙推课表 -->
+        <service
+            android:name=".BtSyncService"
+            android:exported="false" />
+    </application>
+
+</manifest>

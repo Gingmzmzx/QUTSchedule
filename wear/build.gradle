@@ -1,0 +1,54 @@
+plugins {
+    alias(libs.plugins.android.application)
+}
+
+// 手表端刻意保持零依赖：ColorOS Watch 只有 1GB 内存 / 8GB 存储，
+// 不引 AppCompat、Material、Gson，连 androidx 都不碰，APK 目标 150KB 以内。
+android {
+    namespace 'com.netessx.qutschedule.wear'
+    compileSdk {
+        version = release(36) {
+            minorApiLevel = 1
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.netessx.qutschedule.wear"
+        // OPPO Watch 2 是 Android 8.1；targetSdk 也压在这一档，
+        // 免掉后台限制、通知渠道这些新版本才有的约束
+        minSdk 27
+        targetSdk 27
+        versionCode 1
+        versionName "v1.0.0"
+    }
+
+    signingConfigs {
+        // 侧载用：这个模块不走应用商店，直接复用本机 debug 证书，
+        // 让 release 包（R8 压缩后 24KB）也能直接 adb install
+        sideload {
+            storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            signingConfig signingConfigs.sideload
+        }
+    }
+
+    lint {
+        // 手表端只侧载、不上架 Play，targetSdk 故意压在 27 以适配 ColorOS Watch 3
+        disable 'ExpiredTargetSdkVersion'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+// 不声明任何依赖：全部用系统自带的控件与 org.json

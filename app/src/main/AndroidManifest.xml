@@ -18,6 +18,15 @@
     <!-- 应用内下载新版本后拉起系统安装器 -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
+    <!-- 把课表经蓝牙推给手表：Android 12 起用 BLUETOOTH_CONNECT，更早的版本用这两条 -->
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        android:maxSdkVersion="30" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        android:maxSdkVersion="30" />
+
     <application
         android:name=".QutScheduleApp"
         android:allowBackup="true"

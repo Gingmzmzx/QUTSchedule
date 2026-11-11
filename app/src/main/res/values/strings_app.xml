@@ -316,6 +316,16 @@
     <string name="backup_upload">上传备份</string>
     <string name="backup_download">下载恢复</string>
     <string name="backup_ok">完成</string>
+    <string name="backup_watch">手表</string>
+    <string name="backup_watch_hint">OPPO Watch 2 等 ColorOS Watch 设备用：导出后 adb pull 到电脑，再 adb push 到手表同一路径（…/files/schedule.json），手表上点一下屏幕即可生效。</string>
+    <string name="backup_watch_export">导出手表课表</string>
+    <string name="backup_watch_done_fmt">已导出到 %1$s</string>
+    <string name="backup_watch_send">通过蓝牙发送到手表</string>
+    <string name="backup_watch_pick">选择手表</string>
+    <string name="backup_watch_sending">正在发送…</string>
+    <string name="backup_watch_sent">已发送，手表上会自动刷新</string>
+    <string name="backup_watch_no_device">没有已配对的蓝牙设备，请先在系统蓝牙里连上手表</string>
+    <string name="backup_watch_no_permission">需要「附近的设备」权限才能发送</string>
     <string name="backup_failed_fmt">失败：%1$s</string>
 
     <!-- 我的信息 -->

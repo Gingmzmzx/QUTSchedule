@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "QUTSchedule"
 include ':app'
+// 手表端：独立、零依赖，供 OPPO Watch 2（ColorOS Watch 3 / Android 8.1）侧载
+include ':wear'

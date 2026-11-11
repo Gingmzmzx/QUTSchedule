@@ -15,6 +15,7 @@ import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.backup.IcsExporter;
 import com.netessx.qutschedule.backup.JsonBackup;
 import com.netessx.qutschedule.backup.SystemCalendarSync;
+import com.netessx.qutschedule.backup.WatchSync;
 import com.netessx.qutschedule.backup.WebDavClient;
 import com.netessx.qutschedule.data.ScheduleStore;
 
@@ -87,6 +88,13 @@ public class BackupActivity extends BaseActivity {
         column.addView(SettingsUi.buttonRow(this, getString(R.string.backup_calendar),
                 v -> requestCalendarSync()));
 
+        SettingsUi.section(this, column, getString(R.string.backup_watch));
+        column.addView(SettingsUi.label(this, getString(R.string.backup_watch_hint)));
+        column.addView(SettingsUi.buttonRow(this, getString(R.string.backup_watch_export),
+                v -> exportWatch()));
+        column.addView(SettingsUi.buttonRow(this, getString(R.string.backup_watch_send),
+                v -> sendToWatch()));
+
         SettingsUi.section(this, column, getString(R.string.backup_webdav));
         WebDavClient.Config config = WebDavClient.load(this);
         // hint 用字段名（它会浮在输入框上当作标题），示例地址挪到下面当说明
@@ -125,6 +133,77 @@ public class BackupActivity extends BaseActivity {
         } catch (IOException | RuntimeException e) {
             toast(getString(R.string.backup_failed_fmt, message(e)));
         }
+    }
+
+    /**
+     * 把手表端要用的课表写到应用外部私有目录，再用 adb 推到手表。
+     *
+     * <p>路径 {@code /sdcard/Android/data/com.netessx.qutschedule/files/watch-schedule.json}，
+     * 手机侧不需要存储权限；手表那边读自己的同名目录，同样不用授权。
+     */
+    private void exportWatch() {
+        ScheduleStore.get(this).save();
+        java.io.File dir = getExternalFilesDir(null);
+        java.io.File target = new java.io.File(dir == null ? getCacheDir() : dir,
+                "watch-schedule.json");
+        java.io.File source = new java.io.File(getFilesDir(), "schedule.json");
+        try (java.io.InputStream in = new java.io.FileInputStream(source);
+             java.io.OutputStream out = new java.io.FileOutputStream(target)) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            toast(getString(R.string.backup_watch_done_fmt, target.getAbsolutePath()));
+        } catch (IOException | RuntimeException e) {
+            toast(getString(R.string.backup_failed_fmt, message(e)));
+        }
+    }
+
+    /** 蓝牙发送前先要权限：Android 12 起连接蓝牙设备需要运行时授权。 */
+    private final ActivityResultLauncher<String> bluetoothPermission = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), granted -> {
+                if (granted) {
+                    pickWatch();
+                } else {
+                    toast(getString(R.string.backup_watch_no_permission));
+                }
+            });
+
+    /** 把当前课表经蓝牙推给手表。 */
+    private void sendToWatch() {
+        ScheduleStore.get(this).save();
+        if (!WatchSync.hasPermission(this)) {
+            bluetoothPermission.launch(Manifest.permission.BLUETOOTH_CONNECT);
+            return;
+        }
+        pickWatch();
+    }
+
+    /** 从已配对的设备里选手表；两台设备需要先在系统蓝牙里配对过。 */
+    @android.annotation.SuppressLint("MissingPermission")
+    private void pickWatch() {
+        java.util.List<android.bluetooth.BluetoothDevice> devices = WatchSync.bondedDevices(this);
+        if (devices.isEmpty()) {
+            toast(getString(R.string.backup_watch_no_device));
+            return;
+        }
+        String[] items = new String[devices.size()];
+        for (int i = 0; i < devices.size(); i++) {
+            android.bluetooth.BluetoothDevice device = devices.get(i);
+            items[i] = device.getName() + "\n" + device.getAddress();
+        }
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.backup_watch_pick)
+                .setItems(items, (dialog, which) -> sendToWatch(devices.get(which)))
+                .show();
+    }
+
+    private void sendToWatch(android.bluetooth.BluetoothDevice device) {
+        toast(getString(R.string.backup_watch_sending));
+        WatchSync.send(this, device, error -> toast(error == null
+                ? getString(R.string.backup_watch_sent)
+                : getString(R.string.backup_failed_fmt, error)));
     }
 
     private void requestCalendarSync() {
