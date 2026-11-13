@@ -193,10 +193,11 @@
     <span class="chip">适配黄岛校区楼层错峰</span>
   </div>
   <div class="actions">
-    <a class="btn" id="download-top" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载 APK</a>
+    <a class="btn" id="download-top" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载手机版</a>
+    <a class="btn ghost" id="download-wear" href="https://github.com/Gingmzmzx/QUTSchedule/releases/latest">下载手表版</a>
     <a class="btn ghost" href="https://github.com/Gingmzmzx/QUTSchedule">查看源码</a>
   </div>
-  <p class="hint">装过的直接覆盖安装即可，本地数据不会丢。</p>
+  <p class="hint">手表版面向 OPPO Watch 2 等 ColorOS Watch 设备，需用 adb 安装。</p>
 
   <div class="release" id="release" hidden>
     <div class="release-top">
@@ -412,6 +413,7 @@
   var RELEASE_API = 'https://apps.netessx.com/QUTSchedule/releases/latest';
   var top = document.getElementById('download-top');
   var bottom = document.getElementById('download-bottom');
+  var wear = document.getElementById('download-wear');
   var box = document.getElementById('release');
 
   function text(id, value) {
@@ -441,7 +443,19 @@
         top.href = apk;
         bottom.href = apk;
       }
-      top.textContent = apk ? '下载 ' + version : '前往下载';
+      top.textContent = apk ? '下载手机版 ' + version : '下载手机版';
+
+      // 手表包是同一次发布里的第二个文件，label 为「手表端」
+      var wearUrl = '';
+      (data.files || []).forEach(function (f) {
+        if (!f.primary && /手表|wear/i.test(String(f.label || ''))) {
+          wearUrl = String(f.download_url || '');
+        }
+      });
+      if (wear && wearUrl) {
+        wear.href = wearUrl;
+        wear.textContent = '下载手表版';
+      }
 
       text('release-version', '最新版本 ' + version);
       text('release-build', build ? 'build ' + build : '');

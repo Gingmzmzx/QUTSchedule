@@ -4,6 +4,18 @@ plugins {
 
 // 手表端刻意保持零依赖：ColorOS Watch 只有 1GB 内存 / 8GB 存储，
 // 不引 AppCompat、Material、Gson，连 androidx 都不碰，APK 目标 150KB 以内。
+
+// 和手机端共用同一张 release 证书；没配置时退回 debug 证书，保证侧载可用。
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+def releaseStoreFile = localProps.getProperty('release.storeFile')
+def hasReleaseSigning = releaseStoreFile && localProps.getProperty('release.storePassword')
+        && localProps.getProperty('release.keyAlias')
+        && localProps.getProperty('release.keyPassword')
+
 android {
     namespace 'com.netessx.qutschedule.wear'
     compileSdk {
@@ -23,13 +35,20 @@ android {
     }
 
     signingConfigs {
-        // 侧载用：这个模块不走应用商店，直接复用本机 debug 证书，
-        // 让 release 包（R8 压缩后 24KB）也能直接 adb install
+        // 优先用项目共用证书（和手机端一致，换机器也能覆盖安装）；
+        // 没配置时退回本机 debug 证书，保证侧载可用
         sideload {
-            storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            if (hasReleaseSigning) {
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword localProps.getProperty('release.storePassword')
+                keyAlias localProps.getProperty('release.keyAlias')
+                keyPassword localProps.getProperty('release.keyPassword')
+            } else {
+                storeFile file(System.getProperty("user.home") + "/.android/debug.keystore")
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
         }
     }
 

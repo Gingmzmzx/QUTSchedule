@@ -19,6 +19,20 @@ def nextStamp = {
 def stamp = nextStamp()
 def computedVersionCode = stamp.date.toInteger() * 100 + stamp.build
 
+// Release 签名从 local.properties 读，密钥不进版本库。
+// 没配置时 release 仍是 unsigned，不阻塞本地调试构建。
+def localProps = new Properties()
+def localPropsFile = rootProject.file('local.properties')
+if (localPropsFile.exists()) {
+    localPropsFile.withInputStream { localProps.load(it) }
+}
+def releaseStoreFile = localProps.getProperty('release.storeFile')
+def releaseStorePassword = localProps.getProperty('release.storePassword')
+def releaseKeyAlias = localProps.getProperty('release.keyAlias')
+def releaseKeyPassword = localProps.getProperty('release.keyPassword')
+def hasReleaseSigning = releaseStoreFile && releaseStorePassword
+        && releaseKeyAlias && releaseKeyPassword
+
 android {
     namespace 'com.netessx.qutschedule'
     compileSdk {
@@ -33,15 +47,30 @@ android {
         minSdk 26
         targetSdk 36
         versionCode computedVersionCode
-        versionName "v1.5.4"
+        versionName "v1.6.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            if (hasReleaseSigning) {
+                // 允许相对项目根目录或绝对路径
+                storeFile rootProject.file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
     }
 
     buildTypes {
         release {
             optimization {
                 enable false
+            }
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
             }
         }
     }
