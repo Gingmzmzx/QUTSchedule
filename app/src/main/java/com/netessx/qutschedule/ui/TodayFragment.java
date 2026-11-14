@@ -119,11 +119,15 @@ public class TodayFragment extends Fragment {
         }
         Course target = current != null ? current : next;
         if (target == null) {
-            nextTitle.setText("");
-            nextTime.setText("");
+            nextTitle.setText(R.string.today_overview);
             nextPlace.setText("");
-            nextName.setText(courses.isEmpty()
-                    ? getString(R.string.today_no_class) : getString(R.string.today_none_left));
+            if (courses.isEmpty()) {
+                nextName.setText(R.string.today_no_class);
+                nextTime.setText(R.string.today_no_class_summary);
+            } else {
+                nextName.setText(R.string.today_none_left);
+                nextTime.setText(getString(R.string.today_done_summary_fmt, courses.size()));
+            }
             return;
         }
         LocalTime[] times = ScheduleRepository.timesOf(ctx, target, today);

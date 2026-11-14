@@ -1,29 +1,35 @@
 package com.netessx.qutschedule.ui;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.textfield.TextInputLayout;
 import com.netessx.qutschedule.MainActivity;
 import com.netessx.qutschedule.R;
+import com.netessx.qutschedule.auto.AutoRefreshJobService;
+import com.netessx.qutschedule.auto.AutoRefreshScheduler;
 import com.netessx.qutschedule.data.ScheduleStore;
+import com.netessx.qutschedule.data.ZfCaptureStore;
 import com.netessx.qutschedule.model.AppData;
 import com.netessx.qutschedule.model.Prefs;
 import com.netessx.qutschedule.model.Profile;
@@ -33,45 +39,22 @@ import com.netessx.qutschedule.util.Dates;
 import java.time.LocalDate;
 
 /**
- * 初次使用引导：设置学期 → 下载 PDF → 导入 PDF → 用法速览 → 楼层错峰说明 → 个人信息。
+ * 初次使用引导：设置学期 → 登录教务系统 → 设置自动刷新 → 用法速览 → 楼层错峰说明 → 个人信息。
  *
  * <p>每一步都可以跳过；点「跳过」或走完最后一步都会把 {@code prefs.onboarded} 置为 true。
  */
 public class OnboardingActivity extends AppCompatActivity {
 
     private static final int STEP_WELCOME = 0;
-    private static final int STEP_SEMESTER = 1;
-    private static final int STEP_DOWNLOAD = 2;
-    private static final int STEP_IMPORT = 3;
+    private static final int STEP_ZF_LOGIN = 1;
+    private static final int STEP_SEMESTER = 2;
+    private static final int STEP_AUTO_REFRESH = 3;
     private static final int STEP_TIPS = 4;
     private static final int STEP_FLOOR = 5;
     private static final int STEP_SETTINGS = 6;
     private static final int STEP_PROFILE = 7;
     private static final int STEP_DONE = 8;
     private static final int STEP_COUNT = 9;
-
-    /** 下载课表的一步。文字改 res/values/strings_app.xml；{@code imageName} 为 null 表示这步不放截图。 */
-    private static final class DownloadStep {
-        final int titleRes;
-        final int bodyRes;
-        final String imageName;
-
-        DownloadStep(int titleRes, int bodyRes, String imageName) {
-            this.titleRes = titleRes;
-            this.bodyRes = bodyRes;
-            this.imageName = imageName;
-        }
-    }
-
-    /** 三步的标题、正文与配图都在这里指定；改文字去 strings_app.xml，改配图改第三个参数。 */
-    private static final DownloadStep[] DOWNLOAD_STEPS = {
-            new DownloadStep(R.string.onboarding_download_step1_title,
-                    R.string.onboarding_download_step1_body, "onboarding_1"),
-            new DownloadStep(R.string.onboarding_download_step2_title,
-                    R.string.onboarding_download_step2_body, "onboarding_2"),
-            new DownloadStep(R.string.onboarding_download_step3_title,
-                    R.string.onboarding_download_step3_body, null),
-    };
 
     private AppData data;
     private Prefs prefs;
@@ -83,7 +66,6 @@ public class OnboardingActivity extends AppCompatActivity {
     private MaterialButton nextButton;
 
     private int step = STEP_WELCOME;
-    private boolean imported;
 
     private TextInputLayout nameInput;
     private TextInputLayout weeksInput;
@@ -94,12 +76,17 @@ public class OnboardingActivity extends AppCompatActivity {
     private TextInputLayout majorInput;
     private TextInputLayout gradeInput;
 
-    private final ActivityResultLauncher<Intent> importLauncher = registerForActivityResult(
+    private final ActivityResultLauncher<Intent> zfLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK) {
-                    imported = true;
-                    render();
+                    // 抓取成功后自动进入学期确认，不用再点「下一步」
+                    step = STEP_SEMESTER;
                 }
+                render();
+            });
+
+    private final ActivityResultLauncher<String> notificationPermission =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
             });
 
     public static Intent newIntent(Context ctx) {
@@ -120,7 +107,6 @@ public class OnboardingActivity extends AppCompatActivity {
         stepView = findViewById(R.id.tv_step);
         backButton = findViewById(R.id.btn_back);
         nextButton = findViewById(R.id.btn_next);
-        findViewById(R.id.btn_skip).setOnClickListener(v -> finishOnboarding());
         backButton.setOnClickListener(v -> {
             if (step > STEP_WELCOME) {
                 step--;
@@ -144,17 +130,17 @@ public class OnboardingActivity extends AppCompatActivity {
             step++;
             render();
         });
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // 引导必须走完：只能回上一步，不能直接退出
+                if (step > STEP_WELCOME) {
+                    step--;
+                    render();
+                }
+            }
+        });
         render();
-    }
-
-    /** 用返回键退出也算看过了，否则每次启动都会再弹一次。 */
-    @Override
-    public void finish() {
-        super.finish();
-        if (!prefs.onboarded) {
-            prefs.onboarded = true;
-            ScheduleStore.get(this).save();
-        }
     }
 
     private void finishOnboarding() {
@@ -172,16 +158,29 @@ public class OnboardingActivity extends AppCompatActivity {
         content.removeAllViews();
         content.addView(buildPage(step), new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        updateNextState();
+    }
+
+    /** 第 2 步要先登录抓到课表，第 3 步要先设置开学日期，否则不放行。 */
+    private void updateNextState() {
+        boolean enabled = true;
+        if (step == STEP_ZF_LOGIN) {
+            enabled = ZfCaptureStore.get(this).hasCapture();
+        } else if (step == STEP_SEMESTER) {
+            enabled = semester.startMonday() != null;
+        }
+        nextButton.setEnabled(enabled);
+        nextButton.setAlpha(enabled ? 1f : 0.4f);
     }
 
     private View buildPage(int which) {
         switch (which) {
             case STEP_SEMESTER:
                 return buildSemesterPage();
-            case STEP_DOWNLOAD:
-                return buildDownloadPage();
-            case STEP_IMPORT:
-                return buildImportPage();
+            case STEP_ZF_LOGIN:
+                return buildZfLoginPage();
+            case STEP_AUTO_REFRESH:
+                return buildAutoRefreshPage();
             case STEP_TIPS:
                 return simplePage(R.string.onboarding_tips_title, R.string.onboarding_tips_body);
             case STEP_FLOOR:
@@ -238,7 +237,10 @@ public class OnboardingActivity extends AppCompatActivity {
 
     private View buildSemesterPage() {
         LinearLayout column = pageColumn();
-        heading(column, R.string.onboarding_semester_title, R.string.onboarding_semester_body);
+        heading(column, R.string.onboarding_semester_title,
+                semester.isDefaultName()
+                        ? R.string.onboarding_semester_body
+                        : R.string.onboarding_semester_body_auto);
 
         nameInput = SettingsUi.textRow(this, getString(R.string.settings_term_name), semester.name);
         column.addView(nameInput);
@@ -270,6 +272,7 @@ public class OnboardingActivity extends AppCompatActivity {
             if (startButton != null) {
                 startButton.setText(termStartText());
             }
+            updateNextState();
         }, current == null ? today.getYear() : current.getYear(),
                 (current == null ? today.getMonthValue() : current.getMonthValue()) - 1,
                 current == null ? today.getDayOfMonth() : current.getDayOfMonth()).show();
@@ -302,79 +305,54 @@ public class OnboardingActivity extends AppCompatActivity {
         return semester.startMonday() != null;
     }
 
-    // ---------- 下载 PDF ----------
+    // ---------- 登录教务系统 ----------
 
-    private View buildDownloadPage() {
+    private View buildZfLoginPage() {
         LinearLayout column = pageColumn();
-        heading(column, R.string.onboarding_download_title, R.string.onboarding_download_body);
-        for (int i = 0; i < DOWNLOAD_STEPS.length; i++) {
-            column.addView(stepView(i + 1, DOWNLOAD_STEPS[i]));
-        }
-        column.addView(SettingsUi.label(this, getString(R.string.onboarding_download_fallback)));
+        heading(column, R.string.onboarding_zf_title, R.string.onboarding_zf_body);
+        column.addView(SettingsUi.buttonRow(this, getString(R.string.onboarding_zf_button),
+                v -> zfLauncher.launch(new Intent(this, WebImportActivity.class)
+                        .putExtra(WebImportActivity.EXTRA_AUTO_IMPORT, true))));
+        boolean captured = ZfCaptureStore.get(this).hasCapture();
+        column.addView(SettingsUi.label(this, getString(captured
+                ? R.string.onboarding_zf_done : R.string.onboarding_zf_pending)));
         return scrollHost(column);
     }
 
-    /** 一步：标题 + 正文，配图可选。 */
-    private View stepView(int index, DownloadStep step) {
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(0, SettingsUi.dp(this, 20), 0, 0);
+    // ---------- 自动刷新 ----------
 
-        TextView caption = new TextView(this);
-        caption.setText(getString(R.string.onboarding_download_step_fmt, index)
-                + " · " + getString(step.titleRes));
-        caption.setTextSize(14);
-        caption.setTypeface(Typeface.DEFAULT_BOLD);
-        box.addView(caption);
+    private View buildAutoRefreshPage() {
+        LinearLayout column = pageColumn();
+        heading(column, R.string.onboarding_auto_title, R.string.onboarding_auto_body);
+        AutoRefreshSettingsView view = new AutoRefreshSettingsView(this);
+        view.bind(prefs, ZfCaptureStore.get(this).hasCapture(),
+                new AutoRefreshSettingsView.Listener() {
+                    @Override
+                    public void onChanged() {
+                        ScheduleStore.get(OnboardingActivity.this).save();
+                        AutoRefreshScheduler.reschedule(OnboardingActivity.this);
+                        if (prefs.autoRefreshEnabled) {
+                            ensureNotificationPermission();
+                        }
+                    }
 
-        TextView body = new TextView(this);
-        body.setText(step.bodyRes);
-        body.setTextSize(13);
-        body.setLineSpacing(0, 1.25f);
-        body.setTextColor(getColor(R.color.colorOnSurfaceVariant));
-        body.setPadding(0, SettingsUi.dp(this, 4), 0, 0);
-        box.addView(body);
-
-        if (step.imageName == null) {
-            return box;
-        }
-        // 资源按名字查找，把 onboarding_1.png 丢进 res/drawable-nodpi/ 就会自动显示
-        int resId = getResources().getIdentifier(step.imageName, "drawable", getPackageName());
-        ImageView image = new ImageView(this);
-        image.setAdjustViewBounds(true);
-        image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        image.setMinimumHeight(SettingsUi.dp(this, 160));
-        image.setImageResource(resId != 0 ? resId : R.drawable.onboarding_shot_placeholder);
-        box.addView(image);
-
-        if (resId != 0) {
-            final int preview = resId;
-            image.setOnClickListener(v -> ImagePreviewDialog.show(this, preview,
-                    getString(R.string.onboarding_download_step_fmt, index)
-                            + " · " + getString(step.titleRes)));
-        } else {
-            TextView hint = new TextView(this);
-            hint.setText(getString(R.string.onboarding_download_shot_hint, step.imageName));
-            hint.setTextSize(11);
-            hint.setGravity(Gravity.CENTER);
-            hint.setTextColor(getColor(R.color.colorOnSurfaceVariant));
-            box.addView(hint);
-        }
-        return box;
+                    @Override
+                    public void onRefreshNow() {
+                        ensureNotificationPermission();
+                        AutoRefreshJobService.enqueue(OnboardingActivity.this);
+                    }
+                });
+        column.addView(view);
+        column.addView(SettingsUi.label(this, getString(R.string.onboarding_auto_skip)));
+        return scrollHost(column);
     }
 
-    // ---------- 导入 PDF ----------
-
-    private View buildImportPage() {
-        LinearLayout column = pageColumn();
-        heading(column, R.string.onboarding_import_title, R.string.onboarding_import_body);
-        column.addView(SettingsUi.buttonRow(this, getString(R.string.onboarding_import_button),
-                v -> importLauncher.launch(new Intent(this, ImportActivity.class))));
-        if (imported) {
-            column.addView(SettingsUi.label(this, getString(R.string.onboarding_import_done)));
+    private void ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                && ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS);
         }
-        column.addView(SettingsUi.label(this, getString(R.string.onboarding_import_later)));
-        return scrollHost(column);
     }
 
     // ---------- 个人信息 ----------

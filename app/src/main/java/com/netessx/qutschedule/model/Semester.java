@@ -13,6 +13,9 @@ public class Semester {
     public static final int RUNNING = 1;
     public static final int FINISHED = 2;
 
+    /** 用户还没填过学期名时的占位名，导入教务系统后应被真实学期名替换。 */
+    public static final String DEFAULT_NAME = "默认学期";
+
     public String id = UUID.randomUUID().toString();
     public String name = "";
     /** 第 1 周周一，格式 yyyy-MM-dd。 */
@@ -27,6 +30,11 @@ public class Semester {
 
     public boolean isConfigured() {
         return startMonday() != null;
+    }
+
+    /** 名称仍是占位名（或为空），可以安全地被导入的学期名覆盖。 */
+    public boolean isDefaultName() {
+        return name == null || name.trim().isEmpty() || DEFAULT_NAME.equals(name.trim());
     }
 
     /** 第 1 周为 1；开学前返回小于 1 的值。 */

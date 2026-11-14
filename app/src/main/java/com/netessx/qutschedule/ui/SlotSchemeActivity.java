@@ -113,7 +113,12 @@ public class SlotSchemeActivity extends BaseActivity {
     }
 
     private LinearLayout.LayoutParams weight() {
-        return new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        LinearLayout.LayoutParams params =
+                new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f);
+        // 并排按钮之间留一点缝，避免贴成一块
+        int gap = (int) (4 * getResources().getDisplayMetrics().density);
+        params.setMargins(gap, gap * 2, gap, 0);
+        return params;
     }
 
     private void rebuildSlots() {

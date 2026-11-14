@@ -10,6 +10,7 @@
     <string name="title_add_course">新增日程</string>
     <string name="title_settings">设置</string>
     <string name="title_import">导入课表 PDF</string>
+    <string name="title_web_import">从教务系统导入</string>
 
     <string name="prev">上一页</string>
     <string name="next">下一页</string>
@@ -74,6 +75,8 @@
     <string name="import_confirm">导入并覆盖现有课表</string>
     <string name="import_merge">追加到现有课表</string>
     <string name="import_done">导入完成</string>
+    <string name="import_web_loading">正在解析抓到的课表…</string>
+    <string name="import_web_missing">还没有抓到课表数据，请先登录并打开「个人课表」</string>
     <string name="import_need_term">请先在设置中填写开学日期，否则无法推算周次</string>
 
     <string name="channel_reminder_name">上课提醒</string>

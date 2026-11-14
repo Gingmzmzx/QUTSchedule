@@ -69,12 +69,19 @@ public class MainActivity extends AppCompatActivity {
             finish();
             return;
         }
+        ScheduleStore store = ScheduleStore.get(this);
+        if (store.takeUpgradeReset()) {
+            // 课表刚被升级迁移清空，旧的课程提醒也要一并撤掉
+            com.netessx.qutschedule.reminder.ReminderScheduler.sync(this);
+        }
         // 首次启动先进引导：不设内容视图就直接跳走，避免主界面闪一下
-        if (!ScheduleStore.get(this).data().prefs.onboarded) {
+        if (!store.data().prefs.onboarded) {
             startActivity(com.netessx.qutschedule.ui.OnboardingActivity.newIntent(this));
             finish();
             return;
         }
+        // 每次启动对齐一次定时任务：换机恢复、清除数据后也能自动补排
+        com.netessx.qutschedule.auto.AutoRefreshScheduler.reschedule(this);
         setContentView(R.layout.activity_main);
         // edge-to-edge 强制开启，底部导航条与状态栏要让出高度
         com.netessx.qutschedule.ui.Insets.applySystemBars(this,

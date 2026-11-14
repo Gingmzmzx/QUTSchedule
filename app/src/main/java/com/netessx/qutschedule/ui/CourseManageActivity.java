@@ -2,6 +2,7 @@ package com.netessx.qutschedule.ui;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,20 +38,64 @@ public class CourseManageActivity extends BaseActivity {
         column = SettingsUi.column(this);
         List<String> names = ScheduleRepository.courseNames(this);
         SettingsUi.section(this, column, getString(R.string.course_manage_count_fmt, names.size()));
+        LinearLayout card = SettingsUi.card(this, column);
+        boolean first = true;
         for (final String name : names) {
             final List<Course> courses = ScheduleRepository.coursesOfName(this, name);
-            TextView row = new TextView(this);
-            row.setTextSize(15);
-            row.setPadding(0, SettingsUi.dp(this, 12), 0, SettingsUi.dp(this, 12));
-            row.setText(name + "\n" + summary(courses));
-            row.setOnClickListener(v -> showActions(name, courses));
-            column.addView(row);
+            if (!first) {
+                card.addView(divider());
+            }
+            first = false;
+            card.addView(courseRow(name, courses));
         }
         column.addView(SettingsUi.label(this, getString(R.string.course_manage_move_hint)));
         column.addView(SettingsUi.buttonRow(this, getString(R.string.course_manage_move),
                 v -> moveDay()));
         setPageTitle(getString(R.string.mine_course_manage));
         setPageContent(SettingsUi.scrollWrap(this, column));
+    }
+
+    private View divider() {
+        View line = new View(this);
+        line.setBackgroundColor(getColor(R.color.colorOutlineVariant));
+        line.setAlpha(0.5f);
+        line.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, Math.max(1, SettingsUi.dp(this, 1))));
+        return line;
+    }
+
+    private View courseRow(final String name, final List<Course> courses) {
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        row.setPadding(0, SettingsUi.dp(this, 12), 0, SettingsUi.dp(this, 12));
+        row.setBackgroundResource(android.R.drawable.list_selector_background);
+
+        LinearLayout texts = new LinearLayout(this);
+        texts.setOrientation(LinearLayout.VERTICAL);
+        TextView title = new TextView(this);
+        title.setText(name);
+        title.setTextSize(15);
+        title.setTextColor(getColor(R.color.colorOnSurface));
+        texts.addView(title);
+        TextView meta = new TextView(this);
+        meta.setText(summary(courses));
+        meta.setTextSize(12);
+        meta.setTextColor(getColor(R.color.colorOnSurfaceVariant));
+        meta.setPadding(0, SettingsUi.dp(this, 2), 0, 0);
+        texts.addView(meta);
+        row.addView(texts, new LinearLayout.LayoutParams(0,
+                LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
+
+        android.widget.ImageView chevron = new android.widget.ImageView(this);
+        chevron.setImageResource(R.drawable.ic_chevron_right);
+        chevron.setColorFilter(getColor(R.color.colorOnSurfaceVariant));
+        chevron.setAlpha(0.6f);
+        row.addView(chevron, new LinearLayout.LayoutParams(SettingsUi.dp(this, 18),
+                SettingsUi.dp(this, 18)));
+
+        row.setOnClickListener(v -> showActions(name, courses));
+        return row;
     }
 
     private String summary(List<Course> courses) {

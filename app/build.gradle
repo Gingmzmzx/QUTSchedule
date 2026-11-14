@@ -47,7 +47,7 @@ android {
         minSdk 26
         targetSdk 36
         versionCode computedVersionCode
-        versionName "v1.6.0"
+        versionName "v1.7.0 Beta2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -112,6 +112,7 @@ dependencies {
     implementation libs.gson
     implementation libs.swiperefreshlayout
     testImplementation libs.junit
+    testImplementation libs.json
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit
 }

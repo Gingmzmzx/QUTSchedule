@@ -1,6 +1,7 @@
 [versions]
 agp = "9.2.1"
 junit = "4.13.2"
+json = "20240303"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
 appcompat = "1.8.0"
@@ -11,6 +12,7 @@ swiperefresh = "1.1.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+json = { group = "org.json", name = "json", version.ref = "json" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }

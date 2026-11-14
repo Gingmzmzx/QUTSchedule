@@ -20,6 +20,14 @@ public class Prefs {
     public static final String DND_MODE = "DND";
     public static final String[] DND_MODES = {DND_SILENT, DND_MODE};
 
+    /** 数据迁移版本：需要清空课表并强制重新引导时加一。 */
+    public static final int SCHEMA_MIGRATION = 1;
+
+    // 自动刷新频率
+    public static final String REFRESH_DAILY = "DAILY";
+    public static final String REFRESH_WEEKLY = "WEEKLY";
+    public static final String[] REFRESH_MODES = {REFRESH_DAILY, REFRESH_WEEKLY};
+
     public String theme = THEME_SCROLL;
     public String themeMode = MODE_SYSTEM;
     /** Material You 动态取色：默认开启，Android 12 以下自动忽略。 */
@@ -52,10 +60,34 @@ public class Prefs {
     public boolean holidayAware = true;
     /** 是否已经看过初次使用引导。 */
     public boolean onboarded;
+    /** 已执行到的数据迁移版本，见 {@link #SCHEMA_MIGRATION}。 */
+    public int schemaMigration;
     /** 每次启动是否自动检查更新。 */
     public boolean autoCheckUpdate = true;
     /** 已经展示过的最大公告 id；0 表示还没展示过任何公告。 */
     public int lastNoticeId;
+
+    // ---- 教务系统自动刷新 ----
+    public boolean autoRefreshEnabled;
+    /** 刷新频率：每天或每周一次。 */
+    public String autoRefreshMode = REFRESH_DAILY;
+    public int autoRefreshHour = 8;
+    public int autoRefreshMinute;
+    /** 每周模式下刷新发生在星期几，1 = 周一。 */
+    public int autoRefreshWeekday = 1;
+    /** 上次自动刷新的时间，0 表示还没跑过。 */
+    public long autoRefreshLastAt;
+    /** 上次自动刷新结果：空、{@link #REFRESH_OK} 或 {@link #REFRESH_FAILED}。 */
+    public String autoRefreshLastResult = "";
+
+    /** 后台刷新时发现登录已失效；重新登录成功后清掉。 */
+    public boolean autoRefreshSessionExpired;
+
+    /** 上一次「登录过期」通知的时间，避免每次保活都弹。 */
+    public long autoRefreshNoticeAt;
+
+    public static final String REFRESH_OK = "ok";
+    public static final String REFRESH_FAILED = "failed";
 
     public boolean darkOn(boolean systemDark) {
         if (MODE_LIGHT.equals(themeMode)) {
@@ -90,6 +122,31 @@ public class Prefs {
         }
         if (lastNoticeId < 0) {
             lastNoticeId = 0;
+        }
+        if (schemaMigration < 0) {
+            schemaMigration = 0;
+        }
+        if (!contains(REFRESH_MODES, autoRefreshMode)) {
+            autoRefreshMode = REFRESH_DAILY;
+        }
+        if (autoRefreshHour < 0 || autoRefreshHour > 23) {
+            autoRefreshHour = 8;
+        }
+        if (autoRefreshMinute < 0 || autoRefreshMinute > 59) {
+            autoRefreshMinute = 0;
+        }
+        if (autoRefreshWeekday < 1 || autoRefreshWeekday > 7) {
+            autoRefreshWeekday = 1;
+        }
+        if (autoRefreshLastAt < 0) {
+            autoRefreshLastAt = 0;
+        }
+        if (!REFRESH_OK.equals(autoRefreshLastResult)
+                && !REFRESH_FAILED.equals(autoRefreshLastResult)) {
+            autoRefreshLastResult = "";
+        }
+        if (autoRefreshNoticeAt < 0) {
+            autoRefreshNoticeAt = 0;
         }
     }
 
@@ -134,8 +191,18 @@ public class Prefs {
         p.holidaySkip = holidaySkip;
         p.holidayAware = holidayAware;
         p.onboarded = onboarded;
+        p.schemaMigration = schemaMigration;
         p.autoCheckUpdate = autoCheckUpdate;
         p.lastNoticeId = lastNoticeId;
+        p.autoRefreshEnabled = autoRefreshEnabled;
+        p.autoRefreshMode = autoRefreshMode;
+        p.autoRefreshHour = autoRefreshHour;
+        p.autoRefreshMinute = autoRefreshMinute;
+        p.autoRefreshWeekday = autoRefreshWeekday;
+        p.autoRefreshLastAt = autoRefreshLastAt;
+        p.autoRefreshLastResult = autoRefreshLastResult;
+        p.autoRefreshSessionExpired = autoRefreshSessionExpired;
+        p.autoRefreshNoticeAt = autoRefreshNoticeAt;
         p.holidayAware = holidayAware;
         return p;
     }

@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+   系统备份规则：教务系统的登录态和抓取到的课表属于账号数据，
+   绝不能进入云备份或换机迁移，这里显式排除 WebView 数据与抓取目录。
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <!-- 抓取到的课表 JSON 与请求元数据 -->
+    <exclude domain="file" path="zf/" />
+    <!-- WebView 的 cookie、LocalStorage 等登录态 -->
+    <exclude domain="file" path="app_webview/" />
+    <exclude domain="database" path="webviewCookiesChromium.db" />
+    <exclude domain="database" path="webviewCookiesChromiumNoPartition.db" />
+    <exclude domain="database" path="webview_webviewCookiesChromium.db" />
+    <exclude domain="sharedpref" path="WebViewChromiumPrefs.xml" />
 </full-backup-content>

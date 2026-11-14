@@ -1,5 +1,6 @@
 package com.netessx.qutschedule.ui;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,8 +17,11 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.netessx.qutschedule.R;
 import com.netessx.qutschedule.data.ScheduleStore;
+import com.netessx.qutschedule.data.ZfCaptureStore;
+import com.netessx.qutschedule.data.ZfTimetableParser;
 import com.netessx.qutschedule.model.AppData;
 import com.netessx.qutschedule.model.Course;
 import com.netessx.qutschedule.model.Semester;
@@ -32,8 +36,15 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/** 导入课表 PDF：解析后先预览，再决定覆盖或追加。 */
+/**
+ * 导入课表：解析后先预览，再决定覆盖或追加。
+ *
+ * <p>默认是导入 PDF；带 {@link #EXTRA_WEB} 时改为解析「从教务系统导入」抓到的 JSON。
+ */
 public class ImportActivity extends BaseActivity {
+
+    /** true 表示解析 WebImportActivity 抓到的课表 JSON，而不是让用户选 PDF。 */
+    public static final String EXTRA_WEB = "extra_web";
 
     private static final int MAX_PDF_BYTES = 16 * 1024 * 1024;
     private static final String[] DAY_NAMES = {"一", "二", "三", "四", "五", "六", "日"};
@@ -46,6 +57,7 @@ public class ImportActivity extends BaseActivity {
     private Button mergeButton;
     private Button replaceButton;
     private PreviewAdapter adapter;
+    private boolean webMode;
 
     private final ActivityResultLauncher<String[]> picker = registerForActivityResult(
             new ActivityResultContracts.OpenDocument(), uri -> {
@@ -57,7 +69,12 @@ public class ImportActivity extends BaseActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setPageTitle(getString(R.string.title_import));
+        webMode = getIntent().getBooleanExtra(EXTRA_WEB, false);
+        boolean web = webMode;
+        // Activity 的 label 会在 resume 时覆盖 toolbar 标题，所以两处都设
+        CharSequence title = getString(web ? R.string.title_web_import : R.string.title_import);
+        setTitle(title);
+        setPageTitle(title);
         setPageContent(getLayoutInflater().inflate(R.layout.activity_import, null, false));
 
         status = findViewById(R.id.tv_status);
@@ -69,12 +86,18 @@ public class ImportActivity extends BaseActivity {
         recycler.setLayoutManager(new LinearLayoutManager(this));
         recycler.setAdapter(adapter);
 
-        findViewById(R.id.btn_pick).setOnClickListener(v ->
-                picker.launch(new String[]{"application/pdf"}));
         mergeButton.setOnClickListener(v -> commit(false));
         replaceButton.setOnClickListener(v -> commit(true));
         setButtonsEnabled(false);
 
+        if (web) {
+            findViewById(R.id.btn_pick).setVisibility(View.GONE);
+            parseCaptured();
+            return;
+        }
+
+        findViewById(R.id.btn_pick).setOnClickListener(v ->
+                picker.launch(new String[]{"application/pdf"}));
         if (!ScheduleStore.get(this).currentSemester().isConfigured()) {
             status.setText(R.string.import_need_term);
         }
@@ -111,29 +134,70 @@ public class ImportActivity extends BaseActivity {
             }
             final String finalError = error;
             final TimetableParser.ParseResult finalResult = result;
-            runOnUiThread(() -> onParsed(finalResult, finalError));
+            runOnUiThread(() -> {
+                if (finalResult == null) {
+                    onParsed(null, null, "", finalError);
+                } else {
+                    onParsed(finalResult.courses, finalResult.unscheduled,
+                            finalResult.termName, finalError);
+                }
+            });
         });
     }
 
-    private void onParsed(TimetableParser.ParseResult result, String error) {
-        if (error != null || result == null) {
+    /** 解析 WebImportActivity 抓到的课表 JSON；没有抓到过就提示用户先去登录。 */
+    private void parseCaptured() {
+        status.setText(R.string.import_web_loading);
+        setButtonsEnabled(false);
+        parsed.clear();
+        parsedUnscheduled.clear();
+        adapter.notifyDataSetChanged();
+
+        executor.execute(() -> {
+            String body = ZfCaptureStore.get(this).latestBody();
+            String error = null;
+            ZfTimetableParser.ParseResult result = null;
+            if (body == null || body.trim().isEmpty()) {
+                error = getString(R.string.import_web_missing);
+            } else {
+                result = ZfTimetableParser.parse(body);
+                if (!result.isOk()) {
+                    error = result.error;
+                }
+            }
+            final String finalError = error;
+            final ZfTimetableParser.ParseResult finalResult = result;
+            runOnUiThread(() -> {
+                if (finalResult == null) {
+                    onParsed(null, null, "", finalError);
+                } else {
+                    onParsed(finalResult.courses, finalResult.unscheduled,
+                            finalResult.termName, finalError);
+                }
+            });
+        });
+    }
+
+    private void onParsed(List<Course> courses, List<Course> unscheduled,
+                          String termName, String error) {
+        if (error != null || courses == null) {
             status.setText(getString(R.string.import_failed, String.valueOf(error)));
             setButtonsEnabled(false);
             return;
         }
         Semester semester = ScheduleStore.get(this).currentSemester();
         int maxWeek = Math.max(semester.totalWeeks, 30);
-        for (Course course : result.courses) {
+        for (Course course : courses) {
             if (semester.isConfigured()) {
                 course.weeks.removeIf(week -> week < 1 || week > maxWeek);
             }
             parsed.add(course);
         }
-        parsedUnscheduled.addAll(result.unscheduled);
+        parsedUnscheduled.addAll(unscheduled);
 
-        // 课表 PDF 里没有开学日期，只能带出学期名，周次仍由用户在学期设置里填的日期推算
-        if (!result.termName.isEmpty() && (semester.name == null || semester.name.isEmpty())) {
-            semester.name = result.termName;
+        // 解析结果里没有开学日期，只能带出学期名，周次仍由用户在学期设置里填的日期推算
+        if (termName != null && !termName.trim().isEmpty() && semester.isDefaultName()) {
+            semester.name = termName.trim();
         }
 
         status.setText(getString(R.string.import_summary_fmt, parsed.size(), parsedUnscheduled.size()));
@@ -154,22 +218,49 @@ public class ImportActivity extends BaseActivity {
         }
         for (Course course : parsed) {
             course.semesterId = semester.id;
+            if (webMode) {
+                // 标记来源，自动刷新时只替换这批课
+                course.source = ZfCaptureStore.SOURCE_ZF;
+            }
             data.courses.add(course);
         }
         for (Course course : parsedUnscheduled) {
             course.semesterId = semester.id;
+            if (webMode) {
+                course.source = ZfCaptureStore.SOURCE_ZF;
+            }
             data.courses.add(course);
         }
         store.save();
         ReminderScheduler.sync(this);
         Toast.makeText(this, R.string.import_done, Toast.LENGTH_SHORT).show();
         setResult(RESULT_OK);
+        if (!semester.isConfigured()) {
+            // 没有开学日期就算不出周次，课表页会显示空状态，直接把人带到学期设置
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.import_need_term_title)
+                    .setMessage(R.string.import_need_term)
+                    .setNegativeButton(R.string.cancel, (dialog, which) -> finish())
+                    .setPositiveButton(R.string.import_go_settings, (dialog, which) -> {
+                        startActivity(new Intent(this, SettingsActivity.class));
+                        finish();
+                    })
+                    .show();
+            return;
+        }
         finish();
     }
 
     /** 追加时用「名称 + 星期 + 起始节」判断是否为同一门课，避免重复堆叠。 */
     private boolean isDuplicate(Course existing) {
-        for (Course course : parsed) {
+        if (matches(existing, parsed) || matches(existing, parsedUnscheduled)) {
+            return true;
+        }
+        return false;
+    }
+
+    private boolean matches(Course existing, List<Course> incoming) {
+        for (Course course : incoming) {
             if (course.name.equals(existing.name)
                     && course.dayOfWeek == existing.dayOfWeek
                     && course.startSlot == existing.startSlot) {

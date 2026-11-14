@@ -1,8 +1,12 @@
 package com.netessx.qutschedule.ui;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.view.Gravity;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -20,27 +24,52 @@ public class AboutActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         LinearLayout column = SettingsUi.column(this);
-        SettingsUi.section(this, column, getString(R.string.app_name));
-        column.addView(SettingsUi.label(this, getString(R.string.about_version_fmt,
-                versionName(), versionCode())));
+
+        // 顶部品牌区：图标 + 名称 + 版本
+        LinearLayout hero = new LinearLayout(this);
+        hero.setOrientation(LinearLayout.VERTICAL);
+        hero.setGravity(Gravity.CENTER_HORIZONTAL);
+        hero.setPadding(0, SettingsUi.dp(this, 20), 0, SettingsUi.dp(this, 22));
+        ImageView icon = new ImageView(this);
+        icon.setImageResource(R.mipmap.ic_launcher_round);
+        hero.addView(icon, new LinearLayout.LayoutParams(
+                SettingsUi.dp(this, 76), SettingsUi.dp(this, 76)));
+        TextView name = new TextView(this);
+        name.setText(R.string.app_name);
+        name.setTextSize(22);
+        name.setTypeface(null, Typeface.BOLD);
+        name.setGravity(Gravity.CENTER);
+        name.setPadding(0, SettingsUi.dp(this, 12), 0, 0);
+        hero.addView(name);
+        TextView version = new TextView(this);
+        version.setText(getString(R.string.about_version_fmt, versionName(), versionCode()));
+        version.setTextSize(13);
+        version.setTextColor(getColor(R.color.colorOnSurfaceVariant));
+        version.setGravity(Gravity.CENTER);
+        version.setPadding(0, SettingsUi.dp(this, 4), 0, 0);
+        hero.addView(version);
+        column.addView(hero);
+
         column.addView(SettingsUi.label(this, getString(R.string.more_about_text)));
-        column.addView(SettingsUi.buttonRow(this, getString(R.string.about_check_update),
+
+        LinearLayout card = SettingsUi.card(this, column);
+        card.addView(SettingsUi.buttonRow(this, getString(R.string.about_check_update),
                 v -> {
                     UpdatePrompt.checkManual(this);
                     // 手动检查时顺带看一眼公告，有新公告就一起弹
                     NoticePrompt.check(this);
                 }));
-        column.addView(SettingsUi.switchRow(this, getString(R.string.about_auto_check_update),
+        card.addView(SettingsUi.switchRow(this, getString(R.string.about_auto_check_update),
                 ScheduleStore.get(this).data().prefs.autoCheckUpdate,
                 (button, checked) -> {
                     ScheduleStore.get(this).data().prefs.autoCheckUpdate = checked;
                     ScheduleStore.get(this).save();
                 }));
-        column.addView(SettingsUi.buttonRow(this, getString(R.string.about_replay_onboarding),
+        card.addView(SettingsUi.buttonRow(this, getString(R.string.about_replay_onboarding),
                 v -> startActivity(OnboardingActivity.newIntent(this))));
         // 崩溃堆栈 + 运行轨迹：有才显示，没有就不占地方
         if (CrashLog.exists(this) || Trace.exists(this)) {
-            column.addView(SettingsUi.buttonRow(this, getString(R.string.about_crash_log),
+            card.addView(SettingsUi.buttonRow(this, getString(R.string.about_crash_log),
                     v -> showCrashLog()));
         }
         setPageTitle(getString(R.string.mine_about));

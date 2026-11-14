@@ -31,7 +31,7 @@ public class AppData {
         }
         if (semesters.isEmpty()) {
             Semester created = new Semester();
-            created.name = "默认学期";
+            created.name = Semester.DEFAULT_NAME;
             semesters.add(created);
             currentSemesterId = created.id;
             return created;
@@ -150,7 +150,7 @@ public class AppData {
         }
         if (semesters.isEmpty()) {
             Semester created = new Semester();
-            created.name = "默认学期";
+            created.name = Semester.DEFAULT_NAME;
             semesters.add(created);
             currentSemesterId = created.id;
         }

@@ -43,6 +43,11 @@ public class Course {
     /** 结构化字段：是否实验课。 */
     public boolean lab;
     /**
+     * 课程来源，空表示手动添加或从 PDF 导入；{@code "zf"} 表示从教务系统抓取。
+     * 自动刷新只替换这一来源的课程，其余课程保持不动。
+     */
+    public String source = "";
+    /**
      * 运行期标记：这条是临时调课挪过来的，值是对应的 {@link CourseShift#id}。
      * transient，不写入 JSON；原课程身上永远是 null。
      */
@@ -109,6 +114,7 @@ public class Course {
         c.credit = credit;
         c.assessment = assessment;
         c.lab = lab;
+        c.source = source;
         return c;
     }
 }

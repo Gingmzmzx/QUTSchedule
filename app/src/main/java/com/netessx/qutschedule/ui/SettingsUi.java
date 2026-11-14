@@ -74,9 +74,10 @@ public final class SettingsUi {
     public static void section(Context ctx, LinearLayout parent, String text) {
         TextView view = new TextView(ctx);
         view.setText(text);
-        view.setTextSize(12);
-        view.setTextColor(ctx.getColor(R.color.colorPrimary));
-        view.setPadding(dp(ctx, 4), dp(ctx, 18), 0, dp(ctx, 4));
+        view.setTextSize(13);
+        view.setTypeface(null, android.graphics.Typeface.BOLD);
+        view.setTextColor(ctx.getColor(R.color.colorOnSurfaceVariant));
+        view.setPadding(dp(ctx, 4), dp(ctx, 22), 0, dp(ctx, 6));
         parent.addView(view);
     }
 
@@ -89,12 +90,14 @@ public final class SettingsUi {
         return view;
     }
 
-    /** M3 卡片分组：把一组设置放进一张 surfaceContainer 卡片。 */
+    /** M3 卡片分组：把一组设置放进一张带描边的 surface 卡片。 */
     public static LinearLayout card(Context ctx, LinearLayout parent) {
         MaterialCardView card = new MaterialCardView(ctx);
-        card.setCardBackgroundColor(ctx.getColor(R.color.colorSurfaceContainer));
-        card.setRadius(dp(ctx, 16));
+        card.setCardBackgroundColor(ctx.getColor(R.color.colorSurface));
+        card.setRadius(dp(ctx, 18));
         card.setCardElevation(0f);
+        card.setStrokeWidth(dp(ctx, 1));
+        card.setStrokeColor(ctx.getColor(R.color.colorOutlineVariant));
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         params.topMargin = dp(ctx, 6);
@@ -102,7 +105,7 @@ public final class SettingsUi {
 
         LinearLayout inner = new LinearLayout(ctx);
         inner.setOrientation(LinearLayout.VERTICAL);
-        int pad = dp(ctx, 14);
+        int pad = dp(ctx, 16);
         inner.setPadding(pad, dp(ctx, 6), pad, dp(ctx, 10));
         card.addView(inner);
         parent.addView(card);
@@ -115,7 +118,8 @@ public final class SettingsUi {
         view.setText(text);
         view.setTextSize(15);
         view.setChecked(checked);
-        view.setPadding(dp(ctx, 4), dp(ctx, 10), dp(ctx, 4), dp(ctx, 10));
+        view.setMinHeight(dp(ctx, 56));
+        view.setPadding(dp(ctx, 4), dp(ctx, 12), dp(ctx, 4), dp(ctx, 12));
         view.setOnCheckedChangeListener(listener);
         return view;
     }
@@ -126,8 +130,10 @@ public final class SettingsUi {
         view.setAllCaps(false);
         view.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         view.setOnClickListener(listener);
-        view.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        params.topMargin = dp(ctx, 10);
+        view.setLayoutParams(params);
         return view;
     }
 

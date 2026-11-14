@@ -10,6 +10,7 @@ import com.google.gson.JsonParser;
 import com.netessx.qutschedule.model.AppData;
 import com.netessx.qutschedule.model.Course;
 import com.netessx.qutschedule.model.CourseShift;
+import com.netessx.qutschedule.model.Prefs;
 import com.netessx.qutschedule.model.Semester;
 import com.netessx.qutschedule.model.TimeScheme;
 import com.netessx.qutschedule.model.Todo;
@@ -41,6 +42,7 @@ public class ScheduleStore {
     private final File file;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private AppData data = new AppData();
+    private boolean upgradeReset;
 
     /** v1 的根结构，仅用于迁移。 */
     private static class LegacyRoot {
@@ -62,6 +64,48 @@ public class ScheduleStore {
     private ScheduleStore(Context context) {
         file = new File(context.getFilesDir(), FILE_NAME);
         load();
+        upgradeReset = applyUpgradeReset(data);
+        if (upgradeReset) {
+            save();
+            Log.i(TAG, "升级迁移：已清空课表数据，等待重新引导");
+        }
+    }
+
+    /**
+     * 老版本升级上来时清空课表数据（待办、作息、个人信息和偏好都保留），并强制重新走一遍引导。
+     *
+     * <p>只在数据迁移版本落后时执行一次；全新安装的数据本来就没有课表，执行结果等价。
+     *
+     * @return 是否真的做了清理
+     */
+    static boolean applyUpgradeReset(AppData data) {
+        if (data.prefs.schemaMigration >= Prefs.SCHEMA_MIGRATION) {
+            return false;
+        }
+        resetSchedule(data);
+        data.prefs.onboarded = false;
+        data.prefs.schemaMigration = Prefs.SCHEMA_MIGRATION;
+        return true;
+    }
+
+    /** 清空课表相关数据，保留待办、作息方案、个人信息与偏好。 */
+    static void resetSchedule(AppData data) {
+        data.courses.clear();
+        data.shifts.clear();
+        data.semesters.clear();
+        data.currentSemesterId = null;
+        Semester semester = data.currentSemester();
+        semester.name = Semester.DEFAULT_NAME;
+        semester.startDate = "";
+        semester.normalize();
+        data.normalize();
+    }
+
+    /** 取走「本次启动是否做过升级清理」的标记，用于顺带取消旧的课程提醒。 */
+    public synchronized boolean takeUpgradeReset() {
+        boolean value = upgradeReset;
+        upgradeReset = false;
+        return value;
     }
 
     public static synchronized ScheduleStore get(Context context) {
@@ -130,7 +174,7 @@ public class ScheduleStore {
 
         Semester semester = new Semester();
         semester.name = term != null && term.termName != null && !term.termName.isEmpty()
-                ? term.termName : "默认学期";
+                ? term.termName : Semester.DEFAULT_NAME;
         semester.startDate = term != null && term.startDate != null ? term.startDate : "";
         semester.totalWeeks = term != null ? term.totalWeeks : 20;
         semester.schemeId = scheme.id;

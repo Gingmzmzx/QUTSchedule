@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+   云备份 / 换机迁移规则：教务系统登录态和抓取到的课表属于账号数据，
+   不参与任何形式的备份与迁移。
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude domain="file" path="zf/" />
+        <exclude domain="file" path="app_webview/" />
+        <exclude domain="database" path="webviewCookiesChromium.db" />
+        <exclude domain="database" path="webviewCookiesChromiumNoPartition.db" />
+        <exclude domain="database" path="webview_webviewCookiesChromium.db" />
+        <exclude domain="sharedpref" path="WebViewChromiumPrefs.xml" />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="file" path="zf/" />
+        <exclude domain="file" path="app_webview/" />
+        <exclude domain="database" path="webviewCookiesChromium.db" />
+        <exclude domain="database" path="webviewCookiesChromiumNoPartition.db" />
+        <exclude domain="database" path="webview_webviewCookiesChromium.db" />
+        <exclude domain="sharedpref" path="WebViewChromiumPrefs.xml" />
     </device-transfer>
-    -->
 </data-extraction-rules>

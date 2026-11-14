@@ -25,8 +25,8 @@
                 android:id="@+id/tv_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="12dp"
-                android:textSize="24sp"
+                android:paddingTop="16dp"
+                android:textSize="28sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -41,21 +41,25 @@
                 android:id="@+id/card_next"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="1dp">
+                android:layout_marginTop="14dp"
+                app:cardBackgroundColor="?attr/colorPrimaryContainer"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:strokeColor="?attr/colorOutlineVariant"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="14dp">
+                    android:padding="18dp">
 
                     <TextView
                         android:id="@+id/tv_next_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/text_secondary"
+                        android:alpha="0.75"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="12sp" />
 
                     <TextView
@@ -63,22 +67,25 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:paddingTop="4dp"
-                        android:textSize="18sp"
+                        android:textColor="?attr/colorOnPrimaryContainer"
+                        android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tv_next_time"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingTop="4dp"
+                        android:paddingTop="6dp"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/tv_next_place"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:alpha="0.75"
                         android:paddingTop="2dp"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="?attr/colorOnPrimaryContainer"
                         android:textSize="13sp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -87,9 +94,10 @@
                 android:id="@+id/tv_section_courses"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="18dp"
+                android:paddingTop="22dp"
                 android:text="@string/today_section_timeline"
-                android:textSize="15sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -102,9 +110,10 @@
                 android:id="@+id/tv_section_todo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="18dp"
+                android:paddingTop="22dp"
                 android:text="@string/today_section_todo"
-                android:textSize="15sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <LinearLayout
@@ -117,9 +126,10 @@
                 android:id="@+id/tv_section_tomorrow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingTop="18dp"
+                android:paddingTop="22dp"
                 android:text="@string/today_section_tomorrow"
-                android:textSize="15sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="13sp"
                 android:textStyle="bold" />
 
             <LinearLayout
